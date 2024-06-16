@@ -18,6 +18,8 @@ type MpesaExpress struct {
 	CheckoutRequestId   string          `json:"checkout_request_id"`
 	ResponseCode        string          `json:"response_code"`
 	ResponseDescription string          `json:"response_description"`
+	ResultCode          int             `json:"result_code"`
+	ResultDescription   string          `json:"result_description"`
 	Meta                ExpressMetaData `json:"meta" gorm:"type:json"`
 	CreatedAt           time.Time       `json:"created_at"`
 	UpdatedAt           time.Time       `json:"updated_at"`

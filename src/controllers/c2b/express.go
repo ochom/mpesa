@@ -84,7 +84,7 @@ func notifyClient(url string, err error) {
 	}
 }
 
-func MpesaExpressInitiate(req domain.MpesaExpressRequest) {
+func MpesaExpressInitiate(req *domain.MpesaExpressRequest) {
 	mpe := models.NewMpesaExpress(req.PhoneNumber, req.Amount, req.CallbackUrl, req.AccountReference)
 	if err := sql.Create(mpe); err != nil {
 		logs.Error("failed to create mpesa express: %v", err)
@@ -116,7 +116,6 @@ func MpesaExpressInitiate(req domain.MpesaExpressRequest) {
 	res, err := gttp.Post(app.MpesaC2bApiUrl, headers, payload)
 	if err != nil {
 		logs.Error("failed to make request: %v", err)
-		notifyClient(req.CallbackUrl, err)
 		return
 	}
 
@@ -133,14 +132,13 @@ func MpesaExpressInitiate(req domain.MpesaExpressRequest) {
 	mpe.ResponseDescription = data["ResponseDescription"]
 
 	if data["ResponseCode"] != "0" {
-		notifyClient(req.CallbackUrl, fmt.Errorf("%s", data["ResponseDescription"]))
 		return
 	}
 
 	logs.Info("success: %v", string(res.Body))
 }
 
-func MpesaExpressCallback(id string, req domain.MpesaExpressCallback) {
+func MpesaExpressCallback(id string, req *domain.MpesaExpressCallback) {
 	mpe, err := sql.FindOneById[models.MpesaExpress](id)
 	if err != nil {
 		logs.Error("failed to find mpesa express: %v", err)
@@ -158,6 +156,8 @@ func MpesaExpressCallback(id string, req domain.MpesaExpressCallback) {
 	}
 
 	mpe.Meta = meta
+	mpe.ResultCode = req.Body.StkCallback.ResultCode
+	mpe.ResultDescription = req.Body.StkCallback.ResultDescription
 	if err := sql.Update(mpe); err != nil {
 		logs.Error("failed to update mpesa express: %v", err)
 	}

@@ -1,8 +1,13 @@
 package b2c
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/base64"
 	"fmt"
+	"io"
+	"os"
 	"time"
 
 	"github.com/ochom/gutils/cache"
@@ -51,9 +56,43 @@ func authenticate() string {
 }
 
 func getSecurityCredentials() string {
-	// TODO use the correct key here.
-	join := config.MpesaB2CShortCode + config.MpesaB2CPassKey + time.Now().Format("20060102150405")
-	return base64.StdEncoding.EncodeToString([]byte(join))
+	b2cSecurityCredential := cache.Get("mpesa_b2c_security")
+	if b2cSecurityCredential != nil {
+		return string(b2cSecurityCredential)
+	}
+
+	certFile, err := os.OpenFile(config.MpesaB2CCertificatePath, os.O_RDONLY, 0)
+	if err != nil {
+		logs.Error("reading certificate file: %v", err)
+		return ""
+	}
+
+	defer certFile.Close()
+
+	certContent, err := io.ReadAll(certFile)
+	if err != nil {
+		logs.Error("reading certificate content: %v", err)
+		return ""
+	}
+
+	cert, err := x509.ParsePKCS1PublicKey(certContent)
+	if err != nil {
+		logs.Error("parsing certificate: %v", err)
+		return ""
+	}
+
+	msg := []byte(config.MpesaB2CInitiatorPassword)
+
+	cipher, err := rsa.EncryptPKCS1v15(rand.Reader, cert, msg)
+	if err != nil {
+		logs.Error("encrypting message: %v", err)
+		return ""
+	}
+
+	encoded := base64.StdEncoding.EncodeToString(cipher)
+	cache.SetWithExpiry("mpesa_b2c_security", []byte(encoded), 59*time.Minute)
+
+	return encoded
 }
 
 func notifyClient(url string, data *models.Payment) {

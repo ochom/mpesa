@@ -1,0 +1,13 @@
+{
+  "BusinessShortCode": "174379",
+  "Password": "",
+  "Timestamp": "20160216165627",
+  "TransactionType": "CustomerPayBillOnline",
+  "Amount": "1",
+  "PartyA": "254708374149",
+  "PartyB": "174379",
+  "PhoneNumber": "254708374149",
+  "CallBackURL": "https://mydomain.com/pat",
+  "AccountReference": "Test",
+  "TransactionDesc": "Test"
+}

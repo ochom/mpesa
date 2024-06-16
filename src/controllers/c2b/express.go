@@ -21,13 +21,14 @@ func authenticate() string {
 		return string(tokenBytes)
 	}
 
-	password := []byte(app.MpesaC2bConsumerKey + ":" + app.MpesaC2bConsumerSecret)
+	password := []byte(app.MpesaC2BConsumerKey + ":" + app.MpesaC2BConsumerSecret)
 	encoded := base64.StdEncoding.EncodeToString(password)
 	headers := map[string]string{
 		"Authorization": "Basic " + encoded,
 	}
 
-	res, err := gttp.Get(app.MpesaC2bAuthUrl, headers)
+	url := fmt.Sprintf("%s/oauth/v1/generate?grant_type=client_credentials", app.MpesaAuthUrl)
+	res, err := gttp.Get(url, headers)
 	if err != nil {
 		logs.Error("failed to make request: %v", err)
 		return ""
@@ -95,13 +96,13 @@ func MpesaExpressInitiate(req *domain.MpesaExpressRequest) {
 	callbackUrl := fmt.Sprintf("%s?id=%d", app.BaseUrl, mpe.Id)
 
 	payload := map[string]string{
-		"BusinessShortCode": app.MpesaC2bShortCode,
-		"Password":          getPassword(app.MpesaC2bShortCode, app.MpesaC2bPassKey, timestamp),
+		"BusinessShortCode": app.MpesaC2BShortCode,
+		"Password":          getPassword(app.MpesaC2BShortCode, app.MpesaC2BPassKey, timestamp),
 		"Timestamp":         timestamp,
 		"TransactionType":   "CustomerPayBillOnline",
 		"Amount":            "1",
 		"PartyA":            phoneNumber,
-		"PartyB":            app.MpesaC2bShortCode,
+		"PartyB":            app.MpesaC2BShortCode,
 		"PhoneNumber":       phoneNumber,
 		"CallBackURL":       callbackUrl,
 		"AccountReference":  req.AccountReference,
@@ -113,7 +114,8 @@ func MpesaExpressInitiate(req *domain.MpesaExpressRequest) {
 		"Content-Type":  "application/json",
 	}
 
-	res, err := gttp.Post(app.MpesaC2bApiUrl, headers, payload)
+	url := fmt.Sprintf("%s/mpesa/stkpush/v1/processrequest", app.MpesaApiUrl)
+	res, err := gttp.Post(url, headers, payload)
 	if err != nil {
 		logs.Error("failed to make request: %v", err)
 		return

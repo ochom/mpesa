@@ -1,0 +1,13 @@
+{
+  "OriginatorConversationID": "feb5e3f2-fbbc-4745-844c-ee37b546f627",
+  "InitiatorName": "testapi",
+  "SecurityCredential": "",
+  "CommandID": "BusinessPayment",
+  "Amount": "10",
+  "PartyA": "600996",
+  "PartyB": "254728762287",
+  "Remarks": "here are my remarks",
+  "QueueTimeOutURL": "https://mydomain.com/b2c/queue",
+  "ResultURL": "https://mydomain.com/b2c/result",
+  "Occassion": "Christmas"
+}

@@ -10,7 +10,7 @@ import (
 	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/logs"
 	"github.com/ochom/gutils/sql"
-	"github.com/ochom/mpesa/src/app"
+	"github.com/ochom/mpesa/src/app/config"
 	"github.com/ochom/mpesa/src/domain"
 	"github.com/ochom/mpesa/src/models"
 )
@@ -21,13 +21,13 @@ func authenticate() string {
 		return string(tokenBytes)
 	}
 
-	password := []byte(app.MpesaC2BConsumerKey + ":" + app.MpesaC2BConsumerSecret)
+	password := []byte(config.MpesaC2BConsumerKey + ":" + config.MpesaC2BConsumerSecret)
 	encoded := base64.StdEncoding.EncodeToString(password)
 	headers := map[string]string{
 		"Authorization": "Basic " + encoded,
 	}
 
-	url := fmt.Sprintf("%s/oauth/v1/generate?grant_type=client_credentials", app.MpesaAuthUrl)
+	url := fmt.Sprintf("%s/oauth/v1/generate?grant_type=client_credentials", config.MpesaAuthUrl)
 	res, err := gttp.Get(url, headers)
 	if err != nil {
 		logs.Error("failed to make request: %v", err)
@@ -93,16 +93,16 @@ func MpesaExpressInitiate(req *domain.MpesaExpressRequest) {
 
 	timestamp := time.Now().Format("20060102150405")
 	phoneNumber := helpers.ParseMobile(req.PhoneNumber)
-	callbackUrl := fmt.Sprintf("%s?id=%d", app.BaseUrl, mpe.Id)
+	callbackUrl := fmt.Sprintf("%s?id=%d", config.BaseUrl, mpe.Id)
 
 	payload := map[string]string{
-		"BusinessShortCode": app.MpesaC2BShortCode,
-		"Password":          getPassword(app.MpesaC2BShortCode, app.MpesaC2BPassKey, timestamp),
+		"BusinessShortCode": config.MpesaC2BShortCode,
+		"Password":          getPassword(config.MpesaC2BShortCode, config.MpesaC2BPassKey, timestamp),
 		"Timestamp":         timestamp,
 		"TransactionType":   "CustomerPayBillOnline",
 		"Amount":            "1",
 		"PartyA":            phoneNumber,
-		"PartyB":            app.MpesaC2BShortCode,
+		"PartyB":            config.MpesaC2BShortCode,
 		"PhoneNumber":       phoneNumber,
 		"CallBackURL":       callbackUrl,
 		"AccountReference":  req.AccountReference,
@@ -114,7 +114,7 @@ func MpesaExpressInitiate(req *domain.MpesaExpressRequest) {
 		"Content-Type":  "application/json",
 	}
 
-	url := fmt.Sprintf("%s/mpesa/stkpush/v1/processrequest", app.MpesaApiUrl)
+	url := fmt.Sprintf("%s/mpesa/stkpush/v1/processrequest", config.MpesaApiUrl)
 	res, err := gttp.Post(url, headers, payload)
 	if err != nil {
 		logs.Error("failed to make request: %v", err)

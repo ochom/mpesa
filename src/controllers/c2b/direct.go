@@ -4,13 +4,13 @@ import (
 	"github.com/ochom/gutils/gttp"
 	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/logs"
-	"github.com/ochom/mpesa/src/app"
+	"github.com/ochom/mpesa/src/app/config"
 	"github.com/ochom/mpesa/src/domain"
 )
 
 // MpesaExpressValidate ...
 func MpesaExpressValidate(req *domain.ValidationRequest) bool {
-	if app.ClientDepositValidationUrl == "" {
+	if config.ClientDepositValidationUrl == "" {
 		return true
 	}
 
@@ -19,7 +19,7 @@ func MpesaExpressValidate(req *domain.ValidationRequest) bool {
 	}
 
 	payload := helpers.ToBytes(req)
-	res, err := gttp.Post(app.ClientDepositValidationUrl, headers, payload)
+	res, err := gttp.Post(config.ClientDepositValidationUrl, headers, payload)
 	if err != nil {
 		logs.Error("failed to make request: %v", err)
 		return false
@@ -35,7 +35,7 @@ func MpesaExpressValidate(req *domain.ValidationRequest) bool {
 
 // MpesaExpressConfirm ...
 func MpesaExpressConfirm(req *domain.ValidationRequest) {
-	if app.ClientDepositConfirmationUrl == "" {
+	if config.ClientDepositConfirmationUrl == "" {
 		return
 	}
 
@@ -44,7 +44,7 @@ func MpesaExpressConfirm(req *domain.ValidationRequest) {
 		"Content-Type": "application/json",
 	}
 
-	res, err := gttp.Post(app.ClientDepositConfirmationUrl, headers, payload)
+	res, err := gttp.Post(config.ClientDepositConfirmationUrl, headers, payload)
 	if err != nil {
 		logs.Error("failed to make request: %v", err)
 		return

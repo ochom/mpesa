@@ -10,7 +10,7 @@ import (
 	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/logs"
 	"github.com/ochom/gutils/sql"
-	"github.com/ochom/mpesa/src/app"
+	"github.com/ochom/mpesa/src/app/config"
 	"github.com/ochom/mpesa/src/domain"
 	"github.com/ochom/mpesa/src/models"
 )
@@ -21,13 +21,13 @@ func authenticate() string {
 		return string(tokenBytes)
 	}
 
-	password := []byte(app.MpesaB2CConsumerKey + ":" + app.MpesaB2CConsumerSecret)
+	password := []byte(config.MpesaB2CConsumerKey + ":" + config.MpesaB2CConsumerSecret)
 	encoded := base64.StdEncoding.EncodeToString(password)
 	headers := map[string]string{
 		"Authorization": "Basic " + encoded,
 	}
 
-	url := fmt.Sprintf("%s/oauth/v1/generate?grant_type=client_credentials", app.MpesaAuthUrl)
+	url := fmt.Sprintf("%s/oauth/v1/generate?grant_type=client_credentials", config.MpesaAuthUrl)
 	res, err := gttp.Get(url, headers)
 	if err != nil {
 		logs.Error("failed to make request: %v", err)
@@ -52,7 +52,7 @@ func authenticate() string {
 
 func getSecurityCredentials() string {
 	// TODO use the correct key here.
-	join := app.MpesaB2CShortCode + app.MpesaB2CPassKey + time.Now().Format("20060102150405")
+	join := config.MpesaB2CShortCode + config.MpesaB2CPassKey + time.Now().Format("20060102150405")
 	return base64.StdEncoding.EncodeToString([]byte(join))
 }
 
@@ -95,19 +95,19 @@ func InitiatePayment(req domain.B2cRequest) {
 
 	payload := map[string]string{
 		"OriginatorConversationID": payment.Id,
-		"InitiatorName":            app.MpesaB2CInitiatorName,
+		"InitiatorName":            config.MpesaB2CInitiatorName,
 		"SecurityCredential":       securityCredential,
 		"CommandID":                "BusinessPayment",
 		"Amount":                   req.Amount,
-		"PartyA":                   app.MpesaB2CShortCode,
+		"PartyA":                   config.MpesaB2CShortCode,
 		"PartyB":                   payment.PhoneNumber,
-		"Remarks":                  app.MpesaB2CPaymentComment,
-		"QueueTimeOutURL":          app.MpesaB2CQueueTimeoutUrl,
-		"ResultURL":                app.MpesaB2CResultUrl,
+		"Remarks":                  config.MpesaB2CPaymentComment,
+		"QueueTimeOutURL":          config.MpesaB2CQueueTimeoutUrl,
+		"ResultURL":                config.MpesaB2CResultUrl,
 		"Occassion":                "Payout",
 	}
 
-	url := fmt.Sprintf("%s/mpesa/b2c/v3/paymentrequest", app.MpesaApiUrl)
+	url := fmt.Sprintf("%s/mpesa/b2c/v3/paymentrequest", config.MpesaApiUrl)
 	res, err := gttp.Post(url, headers, payload)
 	if err != nil {
 		logs.Error("failed to make request: %v", err)

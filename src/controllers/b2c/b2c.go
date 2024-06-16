@@ -1,13 +1,8 @@
 package b2c
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
 	"encoding/base64"
 	"fmt"
-	"io"
-	"os"
 	"time"
 
 	"github.com/ochom/gutils/cache"
@@ -18,6 +13,7 @@ import (
 	"github.com/ochom/mpesa/src/app/config"
 	"github.com/ochom/mpesa/src/domain"
 	"github.com/ochom/mpesa/src/models"
+	"github.com/ochom/mpesa/src/utils"
 )
 
 func authenticate() string {
@@ -61,35 +57,7 @@ func getSecurityCredentials() string {
 		return string(b2cSecurityCredential)
 	}
 
-	certFile, err := os.OpenFile(config.MpesaB2CCertificatePath, os.O_RDONLY, 0)
-	if err != nil {
-		logs.Error("reading certificate file: %v", err)
-		return ""
-	}
-
-	defer certFile.Close()
-
-	certContent, err := io.ReadAll(certFile)
-	if err != nil {
-		logs.Error("reading certificate content: %v", err)
-		return ""
-	}
-
-	cert, err := x509.ParsePKCS1PublicKey(certContent)
-	if err != nil {
-		logs.Error("parsing certificate: %v", err)
-		return ""
-	}
-
-	msg := []byte(config.MpesaB2CInitiatorPassword)
-
-	cipher, err := rsa.EncryptPKCS1v15(rand.Reader, cert, msg)
-	if err != nil {
-		logs.Error("encrypting message: %v", err)
-		return ""
-	}
-
-	encoded := base64.StdEncoding.EncodeToString(cipher)
+	encoded := utils.HashText(config.MpesaB2CCertificatePath, config.MpesaB2CInitiatorPassword)
 	cache.SetWithExpiry("mpesa_b2c_security", []byte(encoded), 59*time.Minute)
 
 	return encoded

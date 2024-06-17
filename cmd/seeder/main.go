@@ -52,8 +52,6 @@ func seed() error {
 	// populateNumbers ...
 	populateNumbers()
 
-	// create possible number of the format with format 25411xxxxxxx
-	createNumber("25411", 10000000, "%07d")
 	return writeNumbersToDatabase()
 }
 
@@ -84,6 +82,9 @@ func populateNumbers() {
 	for i := 90; i <= 99; i++ {
 		createNumber(fmt.Sprintf("2547%d", i), 1000000, "%06d")
 	}
+
+	// create possible number of the format with format 25411xxxxxxx
+	createNumber("25411", 10000000, "%07d")
 }
 
 func createNumber(prefix string, max int, format string) error {
@@ -127,8 +128,8 @@ func writeNumbersToDatabase() error {
 	reader := csv.NewReader(file)
 
 	chunkSize := 1000
-	chunk := make([][]string, 0, chunkSize)
 	for {
+		chunk := [][]string{}
 		// Read up to chunkSize rows at a time
 		for i := 0; i < chunkSize; i++ {
 			row, err := reader.Read()
@@ -142,45 +143,13 @@ func writeNumbersToDatabase() error {
 			break
 		}
 
-		chunk = chunk[:0]
+		if len(chunk) == 0 {
+			break
+		}
 	}
 
 	return nil
 }
-
-// func hashChunk(chunk [][]string) {
-// 	numbers := []Number{}
-// 	for _, row := range chunk {
-// 		numbers = append(numbers, Number{
-// 			Hash:  hashNumber(row[0]),
-// 			Phone: row[0],
-// 		})
-// 	}
-
-// 	if len(numbers) == 0 {
-// 		return
-// 	}
-
-// 	csvFile, err := os.OpenFile("numbers_hashed.csv", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer csvFile.Close()
-
-// 	writer := csv.NewWriter(csvFile)
-// 	defer writer.Flush()
-
-// 	records := [][]string{}
-// 	for _, num := range numbers {
-// 		records = append(records, []string{num.Phone, num.Hash})
-// 	}
-
-// 	if err := writer.WriteAll(records); err != nil {
-// 		panic(err)
-// 	}
-
-// 	logs.Info("Hashed %d numbers ...", len(numbers))
-// }
 
 func saveChunk(chunk [][]string) error {
 	numbers := []Number{}

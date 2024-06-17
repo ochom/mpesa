@@ -17,6 +17,7 @@ var (
 	ClientDepositConfirmationUrl = env.Get("CLIENT_DEPOSIT_CONFIRMATION_URL")
 
 	//MpesaB2C credentials
+	B2CAllowedOrigins         = env.Get("B2C_ALLOWED_ORIGINS")
 	MpesaB2CShortCode         = env.Get("MPESA_B2C_SHORT_CODE")
 	MpesaB2CPassKey           = env.Get("MPESA_B2C_PASSKEY")
 	MpesaB2CConsumerKey       = env.Get("MPESA_B2C_CONSUMER_KEY")
@@ -27,4 +28,9 @@ var (
 	MpesaB2CPaymentComment    = env.Get("MPESA_B2C_PAYMENT_COMMENT", "Payment")
 	MpesaB2CQueueTimeoutUrl   = env.Get("MPESA_B2C_QUEUE_TIMEOUT_URL")
 	MpesaB2CResultUrl         = env.Get("MPESA_B2C_RESULT_URL")
+
+	// Tax Remittance credentials
+	TaxAllowedOrigins       = env.Get("TAX__REMITTANCE_ ALLOWED_ORIGINS")
+	MpesaTaxConsumerSecrete = env.Get("MPESA_TAX_CONSUMER_SECRET")
+	MpesaTaxConsumerKey     = env.Get("MPESA_TAX_CONSUMER_KEY")
 )

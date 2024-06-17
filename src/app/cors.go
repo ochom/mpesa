@@ -5,14 +5,23 @@ import (
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
-	"github.com/ochom/gutils/env"
+	"github.com/ochom/mpesa/src/app/config"
 )
 
 func b2cCors() fiber.Handler {
-	origins := env.Get("B2C_ALLOWED_ORIGINS")
-	return cors.New(cors.Config{
-		AllowOriginsFunc: func(origin string) bool {
-			return strings.Contains(origins, origin)
-		},
-	})
+	crs := cors.ConfigDefault
+	crs.AllowOriginsFunc = func(origin string) bool {
+		return strings.Contains(config.B2CAllowedOrigins, origin)
+	}
+
+	return cors.New(crs)
+}
+
+func taxCors() fiber.Handler {
+	crs := cors.ConfigDefault
+	crs.AllowOriginsFunc = func(origin string) bool {
+		return strings.Contains(config.TaxAllowedOrigins, origin)
+	}
+
+	return cors.New(crs)
 }

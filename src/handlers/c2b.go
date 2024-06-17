@@ -33,14 +33,14 @@ func HandleStkCallback(ctx fiber.Ctx) error {
 	return ctx.JSON(fiber.Map{"message": "success"})
 }
 
-// HandleC2bValidation ...
-func HandleC2bValidation(ctx fiber.Ctx) error {
+// HandleRestValidation ...
+func HandleRestValidation(ctx fiber.Ctx) error {
 	req, err := parseData[domain.ValidationRequest](ctx)
 	if err != nil {
 		return err
 	}
 
-	if ok := c2b.MpesaExpressValidate(&req); ok {
+	if ok := c2b.ValidateStkRest(&req); ok {
 		return ctx.JSON(fiber.Map{
 			"ResultCode": "0",
 			"ResultDesc": "Accepted",
@@ -53,14 +53,48 @@ func HandleC2bValidation(ctx fiber.Ctx) error {
 	})
 }
 
-// HandleC2bConfirmation ...
-func HandleC2bConfirmation(ctx fiber.Ctx) error {
+// HandleRestConfirmation ...
+func HandleRestConfirmation(ctx fiber.Ctx) error {
 	req, err := parseData[domain.ValidationRequest](ctx)
 	if err != nil {
 		return err
 	}
 
-	go c2b.MpesaExpressConfirm(&req)
+	go c2b.ConfirmStkRest(&req)
+	return ctx.JSON(fiber.Map{
+		"ResultCode": "0",
+		"ResultDesc": "Success",
+	})
+}
+
+// HandleSoapValidation ...
+func HandleSoapValidation(ctx fiber.Ctx) error {
+	req, err := parseData[domain.ValidationRequest](ctx)
+	if err != nil {
+		return err
+	}
+
+	if ok := c2b.ValidateStkSoap(&req); ok {
+		return ctx.JSON(fiber.Map{
+			"ResultCode": "0",
+			"ResultDesc": "Accepted",
+		})
+	}
+
+	return ctx.JSON(fiber.Map{
+		"ResultCode": "C2B00016",
+		"ResultDesc": "Rejected",
+	})
+}
+
+// HandleSoapConfirmation ...
+func HandleSoapConfirmation(ctx fiber.Ctx) error {
+	req, err := parseData[domain.ValidationRequest](ctx)
+	if err != nil {
+		return err
+	}
+
+	go c2b.ConfirmStkSoap(&req)
 	return ctx.JSON(fiber.Map{
 		"ResultCode": "0",
 		"ResultDesc": "Success",

@@ -1,0 +1,14 @@
+{
+  "Initiator": "TaxPayer",
+  "SecurityCredential": "",
+  "Command ID": "PayTaxToKRA",
+  "SenderIdentifierType": "4",
+  "RecieverIdentifierType": "4",
+  "Amount": "239",
+  "PartyA": "888880",
+  "PartyB": "572572",
+  "AccountReference": "353353",
+  "Remarks": "OK",
+  "QueueTimeOutURL": "https://mydomain.com/b2b/remittax/queue/",
+  "ResultURL": "https://mydomain.com/b2b/remittax/result/"
+}

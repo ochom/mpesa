@@ -5,52 +5,17 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ochom/gutils/cache"
 	"github.com/ochom/gutils/gttp"
 	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/logs"
 	"github.com/ochom/gutils/sql"
 	"github.com/ochom/mpesa/src/app/config"
+	"github.com/ochom/mpesa/src/controllers/auth"
 	"github.com/ochom/mpesa/src/domain"
 	"github.com/ochom/mpesa/src/models"
 )
 
-func authenticate() string {
-	tokenBytes := cache.Get("mpesa_c2b_token")
-	if tokenBytes != nil {
-		return string(tokenBytes)
-	}
-
-	password := []byte(config.MpesaC2BConsumerKey + ":" + config.MpesaC2BConsumerSecret)
-	encoded := base64.StdEncoding.EncodeToString(password)
-	headers := map[string]string{
-		"Authorization": "Basic " + encoded,
-	}
-
-	url := fmt.Sprintf("%s/oauth/v1/generate?grant_type=client_credentials", config.MpesaAuthUrl)
-	res, err := gttp.Get(url, headers)
-	if err != nil {
-		logs.Error("failed to make request: %v", err)
-		return ""
-	}
-
-	if res.Status > 201 {
-		logs.Error("request failed status: %d body: %v", res.Status, string(res.Body))
-		return ""
-	}
-
-	tokens := helpers.FromBytes[map[string]string](res.Body)
-	if len(tokens) == 0 {
-		logs.Error("failed to authenticate: %v", string(res.Body))
-		return ""
-	}
-
-	token := tokens["access_token"]
-	cache.SetWithExpiry("mpesa_c2b_token", []byte(token), 59*time.Minute)
-	return token
-}
-
-func getPassword(shortCode, passKey, timeStamp string) string {
+func hash(shortCode, passKey, timeStamp string) string {
 	join := shortCode + passKey + timeStamp
 	return base64.StdEncoding.EncodeToString([]byte(join))
 }
@@ -97,7 +62,7 @@ func MpesaExpressInitiate(req *domain.MpesaExpressRequest) {
 
 	payload := map[string]string{
 		"BusinessShortCode": config.MpesaC2BShortCode,
-		"Password":          getPassword(config.MpesaC2BShortCode, config.MpesaC2BPassKey, timestamp),
+		"Password":          hash(config.MpesaC2BShortCode, config.MpesaC2BPassKey, timestamp),
 		"Timestamp":         timestamp,
 		"TransactionType":   "CustomerPayBillOnline",
 		"Amount":            "1",
@@ -109,8 +74,11 @@ func MpesaExpressInitiate(req *domain.MpesaExpressRequest) {
 		"TransactionDesc":   "Pay bill",
 	}
 
+	username := config.MpesaC2BConsumerKey
+	password := config.MpesaC2BConsumerSecret
+
 	headers := map[string]string{
-		"Authorization": "Bearer " + authenticate(),
+		"Authorization": "Bearer " + auth.Authenticate("mpesa_c2b_token", username, password),
 		"Content-Type":  "application/json",
 	}
 

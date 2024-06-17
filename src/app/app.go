@@ -37,7 +37,7 @@ func New() *fiber.App {
 	// c2b ...
 	c2b := v1.Group("/c2b")
 	c2b.Post("/initiate", handlers.HandleStkPush)
-	c2b.Post("/callback", handlers.HandleStkCallback)
+	c2b.Post("/result", handlers.HandleStkCallback)
 	c2b.Post("/rest/validate", handlers.HandleRestValidation)
 	c2b.Post("/rest/confirm", handlers.HandleRestConfirmation)
 	c2b.Post("/soap/validate", handlers.HandleSoapValidation)

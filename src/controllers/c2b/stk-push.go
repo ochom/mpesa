@@ -50,7 +50,7 @@ func notifyClient(url string, err error) {
 	}
 }
 
-func MpesaExpressInitiate(req *domain.MpesaExpressRequest) {
+func InitiatePayment(req *domain.MpesaExpressRequest) {
 	mpe := models.NewMpesaExpress(req.PhoneNumber, req.Amount, req.CallbackUrl, req.AccountReference)
 	if err := sql.Create(mpe); err != nil {
 		logs.Error("failed to create mpesa express: %v", err)
@@ -58,7 +58,7 @@ func MpesaExpressInitiate(req *domain.MpesaExpressRequest) {
 
 	timestamp := time.Now().Format("20060102150405")
 	phoneNumber := helpers.ParseMobile(req.PhoneNumber)
-	callbackUrl := fmt.Sprintf("%s?id=%d", config.BaseUrl, mpe.Id)
+	callbackUrl := fmt.Sprintf("%s/c2b/result?id=%d", config.BaseUrl, mpe.Id)
 
 	payload := map[string]string{
 		"BusinessShortCode": config.MpesaC2BShortCode,
@@ -108,7 +108,7 @@ func MpesaExpressInitiate(req *domain.MpesaExpressRequest) {
 	logs.Info("success: %v", string(res.Body))
 }
 
-func MpesaExpressCallback(id string, req *domain.MpesaExpressCallback) {
+func ResultPayment(id string, req *domain.MpesaExpressCallback) {
 	mpe, err := sql.FindOneById[models.MpesaExpress](id)
 	if err != nil {
 		logs.Error("failed to find mpesa express: %v", err)

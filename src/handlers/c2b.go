@@ -13,7 +13,7 @@ func HandleStkPush(ctx fiber.Ctx) error {
 		return err
 	}
 
-	go c2b.MpesaExpressInitiate(&req)
+	go c2b.InitiatePayment(&req)
 	return ctx.JSON(fiber.Map{"message": "success"})
 }
 
@@ -29,7 +29,7 @@ func HandleStkCallback(ctx fiber.Ctx) error {
 		return err
 	}
 
-	go c2b.MpesaExpressCallback(id, &req)
+	go c2b.ResultPayment(id, &req)
 	return ctx.JSON(fiber.Map{"message": "success"})
 }
 

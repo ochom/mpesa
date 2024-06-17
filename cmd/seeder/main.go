@@ -20,8 +20,8 @@ type Number struct {
 func init() {
 	// init sqlite database
 	cfg := sql.Config{
-		DatabaseType: sql.Sqlite,
-		Url:          "seeder.db",
+		Driver: sql.Sqlite,
+		Url:    "seeder.db",
 	}
 
 	if err := sql.New(&cfg); err != nil {

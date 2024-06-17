@@ -5,7 +5,7 @@ go 1.22.1
 require (
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/gofiber/fiber/v3 v3.0.0-beta.2
-	github.com/ochom/gutils v1.1.1
+	github.com/ochom/gutils v1.1.2
 )
 
 require (

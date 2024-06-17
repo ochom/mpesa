@@ -13,8 +13,8 @@ import (
 func init() {
 	// init database
 	cfg := sql.Config{
-		DatabaseType: sql.MySQL,
-		Url:          config.DatabaseUrl,
+		Driver: sql.MySQL,
+		Url:    config.DatabaseUrl,
 	}
 
 	if err := sql.New(&cfg); err != nil {

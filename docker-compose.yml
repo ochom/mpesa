@@ -28,7 +28,6 @@ services:
       - DATABASE_DRIVER=0 # 0=>sqlite, 1=>postgres, 2=>mysql
       - DATABASE_URL=""
       - BASE_URL=""
-      - MPESA_AUTH_URL=""
       - MPESA_API_URL=""
 
       # MpesaC2B credentials

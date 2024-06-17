@@ -23,7 +23,7 @@ func Authenticate(tokenName, username, password string) string {
 		"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(username+":"+password)),
 	}
 
-	url := fmt.Sprintf("%s/oauth/v1/generate?grant_type=client_credentials", config.MpesaAuthUrl)
+	url := fmt.Sprintf("%s/oauth/v1/generate?grant_type=client_credentials", config.MpesaApiUrl)
 	res, err := gttp.Get(url, headers)
 	if err != nil {
 		logs.Error("failed to make request: %v", err)

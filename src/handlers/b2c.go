@@ -17,8 +17,8 @@ func HandleInitiatePayment(ctx fiber.Ctx) error {
 	return ctx.JSON(fiber.Map{"message": "success"})
 }
 
-// HandlePaymentCallback ...
-func HandlePaymentCallback(ctx fiber.Ctx) error {
+// HandleB2CResult ...
+func HandleB2CResult(ctx fiber.Ctx) error {
 	id := ctx.Query("id")
 	if id == "" {
 		return ctx.JSON(fiber.Map{"message": "failed"})
@@ -29,6 +29,13 @@ func HandlePaymentCallback(ctx fiber.Ctx) error {
 		return err
 	}
 
-	go b2c.ResultBusinessPayment(id, &req)
+	go b2c.ResultPayment(id, &req)
 	return ctx.JSON(fiber.Map{"message": "success"})
+}
+
+// HandleB2cTimeout ...
+func HandleB2cTimeout(ctx fiber.Ctx) error {
+	id := ctx.Params("id")
+	go b2c.TimeoutPayment(id)
+	return nil
 }

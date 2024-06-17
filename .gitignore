@@ -1,6 +1,6 @@
 *.env
 *.out
-*.db*
 tmp
 *.csv
 certs
+data

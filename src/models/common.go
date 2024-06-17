@@ -24,3 +24,8 @@ func (m *MetaData) Scan(value any) error {
 func (m MetaData) Value() (driver.Value, error) {
 	return helpers.ToBytes(m), nil
 }
+
+// Get returns a key in the metadata
+func (m MetaData) Get(key string) any {
+	return m[key]
+}

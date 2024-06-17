@@ -6,10 +6,11 @@ import (
 	"github.com/ochom/gutils/logs"
 	"github.com/ochom/mpesa/src/app/config"
 	"github.com/ochom/mpesa/src/domain"
+	"github.com/ochom/mpesa/src/utils"
 )
 
-// ValidateStkRest  validates payments received through REST API
-func ValidateStkRest(req *domain.ValidationRequest) bool {
+// ValidatePayment  validates payments received through REST API
+func ValidatePayment(req *domain.ValidationRequest) bool {
 	if config.ClientDepositValidationUrl == "" {
 		return true
 	}
@@ -33,27 +34,13 @@ func ValidateStkRest(req *domain.ValidationRequest) bool {
 	return true
 }
 
-// ConfirmStkRest confirms payments received through REST API
-func ConfirmStkRest(req *domain.ValidationRequest) {
+// ConfirmPayment confirms payments received through REST API
+func ConfirmPayment(req *domain.ValidationRequest) {
 	if config.ClientDepositConfirmationUrl == "" {
 		return
 	}
 
-	payload := helpers.ToBytes(req)
-	headers := map[string]string{
-		"Content-Type": "application/json",
+	if err := utils.NotifyClient(config.ClientDepositConfirmationUrl, req); err != nil {
+		logs.Error("failed to notify client: %v", err)
 	}
-
-	res, err := gttp.Post(config.ClientDepositConfirmationUrl, headers, payload)
-	if err != nil {
-		logs.Error("failed to make request: %v", err)
-		return
-	}
-
-	if res.Status > 201 {
-		logs.Error("request failed status: %d body: %v", res.Status, string(res.Body))
-		return
-	}
-
-	logs.Info("request successful status: %d body: %v", res.Status, string(res.Body))
 }

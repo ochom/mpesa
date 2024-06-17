@@ -4,9 +4,10 @@ import "github.com/ochom/gutils/env"
 
 var (
 	// BaseUrl used for callbacks to this application
-	BaseUrl      = env.Get("BASE_URL")
-	MpesaAuthUrl = env.Get("MPESA_AUTH_URL")
-	MpesaApiUrl  = env.Get("MPESA_API_URL")
+	DbDriver    = env.Int("DATABASE_DRIVER", 0)
+	DbUrl       = env.Get("DATABASE_URL")
+	BaseUrl     = env.Get("BASE_URL")
+	MpesaApiUrl = env.Get("MPESA_API_URL")
 
 	// MpesaC2B credentials
 	MpesaC2BShortCode            = env.Get("MPESA_C2B_SHORT_CODE")
@@ -24,13 +25,13 @@ var (
 	MpesaB2CConsumerSecret    = env.Get("MPESA_B2C_CONSUMER_SECRET")
 	MpesaB2CInitiatorName     = env.Get("MPESA_B2C_INITIATOR_NAME")
 	MpesaB2CInitiatorPassword = env.Get("MPESA_B2C_INITIATOR_PASSWORD")
-	MpesaB2CCertificatePath   = env.Get("MPESA_B2C_CERTIFICATE_PATH", "./certs/cert.cer")
-	MpesaB2CPaymentComment    = env.Get("MPESA_B2C_PAYMENT_COMMENT", "Payment")
-	MpesaB2CQueueTimeoutUrl   = env.Get("MPESA_B2C_QUEUE_TIMEOUT_URL")
-	MpesaB2CResultUrl         = env.Get("MPESA_B2C_RESULT_URL")
+	MpesaB2CCertificatePath   = env.Get("MPESA_B2C_CERTIFICATE_PATH")
+	MpesaB2CPaymentComment    = env.Get("MPESA_B2C_PAYMENT_COMMENT")
 
 	// Tax Remittance credentials
-	TaxAllowedOrigins       = env.Get("TAX__REMITTANCE_ ALLOWED_ORIGINS")
-	MpesaTaxConsumerSecrete = env.Get("MPESA_TAX_CONSUMER_SECRET")
-	MpesaTaxConsumerKey     = env.Get("MPESA_TAX_CONSUMER_KEY")
+	TaxAllowedOrigins         = env.Get("TAX__REMITTANCE_ALLOWED_ORIGINS")
+	MpesaTaxConsumerSecrete   = env.Get("MPESA_TAX_CONSUMER_SECRET")
+	MpesaTaxConsumerKey       = env.Get("MPESA_TAX_CONSUMER_KEY")
+	MpesaTaxInitiatorPassword = env.Get("MPESA_TAX_INITIATOR_PASSWORD")
+	MpesaTaxCertificatePath   = env.Get("MPESA_TAX_CERTIFICATE_PATH")
 )

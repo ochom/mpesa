@@ -4,8 +4,8 @@ import (
 	"time"
 )
 
-// MpesaExpress store mpesa stk-push requests and respective responses
-type MpesaExpress struct {
+// CustomerPayment store data when customer makes a payment to business
+type CustomerPayment struct {
 	Id                  int       `json:"id"`
 	Amount              string    `json:"amount"`
 	PhoneNumber         string    `json:"phone_number"`
@@ -23,9 +23,9 @@ type MpesaExpress struct {
 	DeletedAt           time.Time `json:"deleted_at"`
 }
 
-// NewMpesaExpress create a new MpesaExpress
-func NewMpesaExpress(phone, amount, cbUrl, AccountReference string) *MpesaExpress {
-	return &MpesaExpress{
+// NewCustomerPayment create a new CustomerPayment
+func NewCustomerPayment(phone, amount, cbUrl, AccountReference string) *CustomerPayment {
+	return &CustomerPayment{
 		Amount:           amount,
 		PhoneNumber:      phone,
 		AccountReference: AccountReference,

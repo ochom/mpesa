@@ -11,32 +11,10 @@ import (
 	"github.com/ochom/mpesa/src/controllers/auth"
 	"github.com/ochom/mpesa/src/domain"
 	"github.com/ochom/mpesa/src/models"
+	"github.com/ochom/mpesa/src/utils"
 )
 
-func notifyClient(url string, payload any) {
-	if url == "" {
-		return
-	}
-
-	headers := map[string]string{
-		"Content-Type": "application/json",
-	}
-
-	res, err := gttp.Post(url, headers, helpers.ToBytes(payload))
-	if err != nil {
-		logs.Error("failed to make request: %v", err)
-		return
-	}
-
-	if res.Status > 201 {
-		logs.Error("request failed status: %d body: %v", res.Status, string(res.Body))
-		return
-	}
-
-	logs.Info("request successful status: %d body: %v", res.Status, string(res.Body))
-}
-
-func InitiatePayment(req domain.TaxRequest) {
+func InitiatePayment(req *domain.TaxRequest) {
 	payment := models.NewTaxPayment(req.RequestId, req.ShortCode, req.PaymentRequestNumber, req.Amount, req.CallbackUrl)
 	if err := sql.Create(payment); err != nil {
 		logs.Error("Error creating payment: %v", err)
@@ -51,8 +29,8 @@ func InitiatePayment(req domain.TaxRequest) {
 		"Content-Type":  "application/json",
 	}
 
-	certPath := config.MpesaB2CCertificatePath
-	initiatorPassword := config.MpesaB2CInitiatorPassword
+	certPath := config.MpesaTaxCertificatePath
+	initiatorPassword := config.MpesaTaxInitiatorPassword
 
 	resultUrl := fmt.Sprintf("%s/tax/result?id=%s", config.BaseUrl, payment.Id)
 	timeoutUrl := fmt.Sprintf("%s/tax/timeout?id=%s", config.BaseUrl, payment.Id)
@@ -101,7 +79,27 @@ func InitiatePayment(req domain.TaxRequest) {
 	}
 }
 
-func ResultBusinessPayment(id string, req *domain.B2cResult) {
+func TimeoutPayment(id string) {
+	payment, err := sql.FindOneById[models.TaxPayment](id)
+	if err != nil {
+		logs.Error("could not find payment: %v", err)
+		return
+	}
+
+	payload := map[string]any{
+		"id":         payment.Id,
+		"status":     2,
+		"request_id": payment.RequestId,
+		"amount":     payment.Amount,
+		"reference":  payment.PaymentRequestNumber,
+	}
+
+	if err := utils.NotifyClient(payment.CallbackUrl, payload); err != nil {
+		logs.Error("failed to notify client: %v", err)
+	}
+}
+
+func ResultPayment(id string, req *domain.TaxResult) {
 	payment, err := sql.FindOneById[models.TaxPayment](id)
 	if err != nil {
 		logs.Error("could not find payment: %v", err)
@@ -132,6 +130,7 @@ func ResultBusinessPayment(id string, req *domain.B2cResult) {
 	}
 
 	payload := map[string]any{
+		"id":         payment.Id,
 		"status":     req.Result.ResultCode,
 		"request_id": payment.RequestId,
 		"amount":     payment.Amount,
@@ -139,5 +138,7 @@ func ResultBusinessPayment(id string, req *domain.B2cResult) {
 		"message":    req.Result.ResultDesc,
 	}
 
-	notifyClient(payment.CallbackUrl, payload)
+	if err := utils.NotifyClient(payment.CallbackUrl, payload); err != nil {
+		logs.Error("failed to notify client: %v", err)
+	}
 }

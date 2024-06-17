@@ -7,8 +7,8 @@ import (
 	"github.com/ochom/gutils/uuid"
 )
 
-// Payment store mpesa b2c requests and respective responses
-type Payment struct {
+// BusinessPayment store data when a business makes payment to Customer
+type BusinessPayment struct {
 	Id                       string    `json:"id"`
 	Amount                   string    `json:"amount"`
 	PhoneNumber              string    `json:"phone_number"`
@@ -27,9 +27,9 @@ type Payment struct {
 	DeletedAt                time.Time `json:"deleted_at"`
 }
 
-// NewPayment create a new Payment
-func NewPayment(requestId, phone, amount, cbUrl string) *Payment {
-	return &Payment{
+// NewBusinessPayment create a new BusinessPayment
+func NewBusinessPayment(requestId, phone, amount, cbUrl string) *BusinessPayment {
+	return &BusinessPayment{
 		Id:          uuid.New(),
 		RequestId:   requestId,
 		Amount:      amount,

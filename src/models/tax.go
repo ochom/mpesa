@@ -3,15 +3,15 @@ package models
 import (
 	"time"
 
-	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/uuid"
 )
 
-// Payment store mpesa b2c requests and respective responses
-type Payment struct {
+// TaxPayment store mpesa b2c requests and respective responses
+type TaxPayment struct {
 	Id                       string    `json:"id"`
 	Amount                   string    `json:"amount"`
-	PhoneNumber              string    `json:"phone_number"`
+	ShortCode                string    `json:"short_code"`
+	PaymentRequestNumber     string    `json:"payment_request_number"` // prn
 	RequestId                string    `json:"request_id"`
 	CallbackUrl              string    `json:"callback_url"`
 	ConversationID           string    `json:"conversation_id"`
@@ -27,13 +27,14 @@ type Payment struct {
 	DeletedAt                time.Time `json:"deleted_at"`
 }
 
-// NewPayment create a new Payment
-func NewPayment(requestId, phone, amount, cbUrl string) *Payment {
-	return &Payment{
-		Id:          uuid.New(),
-		RequestId:   requestId,
-		Amount:      amount,
-		PhoneNumber: helpers.ParseMobile(phone),
-		CallbackUrl: cbUrl,
+// NewTaxPayment create a new TaxPayment
+func NewTaxPayment(requestId, shortCode, prn, amount, cbUrl string) *TaxPayment {
+	return &TaxPayment{
+		Id:                   uuid.New(),
+		RequestId:            requestId,
+		ShortCode:            shortCode,
+		Amount:               amount,
+		PaymentRequestNumber: prn,
+		CallbackUrl:          cbUrl,
 	}
 }

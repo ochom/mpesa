@@ -1,4 +1,4 @@
-package b2c
+package tax
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ import (
 	"github.com/ochom/mpesa/src/models"
 )
 
-func notifyClient(url string, data *models.Payment) {
+func notifyClient(url string, payload any) {
 	if url == "" {
 		return
 	}
@@ -22,7 +22,7 @@ func notifyClient(url string, data *models.Payment) {
 		"Content-Type": "application/json",
 	}
 
-	res, err := gttp.Post(url, headers, helpers.ToBytes(data))
+	res, err := gttp.Post(url, headers, helpers.ToBytes(payload))
 	if err != nil {
 		logs.Error("failed to make request: %v", err)
 		return
@@ -36,40 +36,42 @@ func notifyClient(url string, data *models.Payment) {
 	logs.Info("request successful status: %d body: %v", res.Status, string(res.Body))
 }
 
-func InitiatePayment(req domain.B2cRequest) {
-	payment := models.NewPayment(req.RequestId, req.PhoneNumber, req.Amount, req.CallbackUrl)
+func InitiatePayment(req domain.TaxRequest) {
+	payment := models.NewTaxPayment(req.RequestId, req.ShortCode, req.PaymentRequestNumber, req.Amount, req.CallbackUrl)
 	if err := sql.Create(payment); err != nil {
 		logs.Error("Error creating payment: %v", err)
 		return
 	}
 
-	username := config.MpesaB2CConsumerKey
-	password := config.MpesaB2CConsumerSecret
+	username := config.MpesaTaxConsumerKey
+	password := config.MpesaTaxConsumerSecrete
 
 	headers := map[string]string{
-		"Authorization": "Bearer " + auth.Authenticate("mpesa_b2c_token", username, password),
+		"Authorization": "Bearer " + auth.Authenticate("mpesa_tax_token", username, password),
 		"Content-Type":  "application/json",
 	}
 
 	certPath := config.MpesaB2CCertificatePath
 	initiatorPassword := config.MpesaB2CInitiatorPassword
-	securityCredential := auth.GetSecurityCredentials("mpesa_b2c_security", certPath, initiatorPassword)
 
+	resultUrl := fmt.Sprintf("%s/tax/result?id=%s", config.BaseUrl, payment.Id)
+	timeoutUrl := fmt.Sprintf("%s/tax/timeout?id=%s", config.BaseUrl, payment.Id)
 	payload := map[string]string{
-		"OriginatorConversationID": payment.Id,
-		"InitiatorName":            config.MpesaB2CInitiatorName,
-		"SecurityCredential":       securityCredential,
-		"CommandID":                "BusinessPayment",
-		"Amount":                   req.Amount,
-		"PartyA":                   config.MpesaB2CShortCode,
-		"PartyB":                   payment.PhoneNumber,
-		"Remarks":                  config.MpesaB2CPaymentComment,
-		"QueueTimeOutURL":          config.MpesaB2CQueueTimeoutUrl,
-		"ResultURL":                config.MpesaB2CResultUrl,
-		"Occassion":                "Payout",
+		"Initiator":              "TaxPayer",
+		"SecurityCredential":     auth.GetSecurityCredentials("mpesa_tax_security", certPath, initiatorPassword),
+		"Command ID":             "PayTaxToKRA",
+		"SenderIdentifierType":   "4",
+		"RecieverIdentifierType": "4",
+		"Amount":                 req.Amount,
+		"PartyA":                 req.ShortCode,
+		"PartyB":                 "572572",
+		"AccountReference":       req.PaymentRequestNumber,
+		"Remarks":                "OK",
+		"QueueTimeOutURL":        timeoutUrl,
+		"ResultURL":              resultUrl,
 	}
 
-	url := fmt.Sprintf("%s/mpesa/b2c/v3/paymentrequest", config.MpesaApiUrl)
+	url := fmt.Sprintf("%s/mpesa/b2b/v1/remittax", config.MpesaApiUrl)
 	res, err := gttp.Post(url, headers, payload)
 	if err != nil {
 		logs.Error("failed to make request: %v", err)
@@ -100,7 +102,7 @@ func InitiatePayment(req domain.B2cRequest) {
 }
 
 func ResultBusinessPayment(id string, req *domain.B2cResult) {
-	payment, err := sql.FindOneById[models.Payment](id)
+	payment, err := sql.FindOneById[models.TaxPayment](id)
 	if err != nil {
 		logs.Error("could not find payment: %v", err)
 		return
@@ -129,5 +131,13 @@ func ResultBusinessPayment(id string, req *domain.B2cResult) {
 		return
 	}
 
-	notifyClient(payment.CallbackUrl, nil)
+	payload := map[string]any{
+		"status":     req.Result.ResultCode,
+		"request_id": payment.RequestId,
+		"amount":     payment.Amount,
+		"reference":  payment.PaymentRequestNumber,
+		"message":    req.Result.ResultDesc,
+	}
+
+	notifyClient(payment.CallbackUrl, payload)
 }

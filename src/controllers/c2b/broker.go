@@ -8,8 +8,8 @@ import (
 	"github.com/ochom/mpesa/src/domain"
 )
 
-// ValidateStkRest  validates payments received through REST API
-func ValidateStkRest(req *domain.ValidationRequest) bool {
+// ValidateStkSoap  validates payments received through Soap API
+func ValidateStkSoap(req *domain.ValidationRequest) bool {
 	if config.ClientDepositValidationUrl == "" {
 		return true
 	}
@@ -33,8 +33,8 @@ func ValidateStkRest(req *domain.ValidationRequest) bool {
 	return true
 }
 
-// ConfirmStkRest confirms payments received through REST API
-func ConfirmStkRest(req *domain.ValidationRequest) {
+// ConfirmStkRest confirms payments received through Soap API
+func ConfirmStkSoap(req *domain.ValidationRequest) {
 	if config.ClientDepositConfirmationUrl == "" {
 		return
 	}

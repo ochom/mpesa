@@ -35,17 +35,24 @@ func New() *fiber.App {
 	v1 := app.Group("/v1")
 
 	// c2b ...
-	c2b := v1.Group("c2b")
-	c2b.Post("initiate", handlers.HandleStkPush)
-	c2b.Post("callback", handlers.HandleC2bConfirmation)
-	c2b.Post("validate", handlers.HandleC2bValidation)
-	c2b.Post("confirm", handlers.HandleC2bConfirmation)
+	c2b := v1.Group("/c2b")
+	c2b.Post("/initiate", handlers.HandleStkPush)
+	c2b.Post("/callback", handlers.HandleStkCallback)
+	c2b.Post("/rest/validate", handlers.HandleRestValidation)
+	c2b.Post("/rest/confirm", handlers.HandleRestConfirmation)
+	c2b.Post("/soap/validate", handlers.HandleSoapValidation)
+	c2b.Post("/soap/confirm", handlers.HandleSoapConfirmation)
 
 	// b2c ...
 	b2c := v1.Group("b2c")
 	b2c.Use(b2cCors())
-	b2c.Post("initiate", handlers.HandleInitiatePayment)
-	b2c.Post("callback", handlers.HandlePaymentCallback)
+	b2c.Post("/initiate", handlers.HandleInitiatePayment)
+	b2c.Post("/callback", handlers.HandlePaymentCallback)
+
+	// tax ...
+	tax := v1.Group("/tax")
+	tax.Use(taxCors())
+	tax.Post("/remit", handlers.HandleTaxRemittance)
 
 	return app
 }

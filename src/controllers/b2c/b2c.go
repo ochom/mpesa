@@ -88,6 +88,7 @@ func TimeoutPayment(id string) {
 	}
 
 	payload := map[string]any{
+		"id":         payment.Id,
 		"status":     2,
 		"request_id": payment.RequestId,
 		"amount":     payment.Amount,
@@ -127,11 +128,12 @@ func ResultPayment(id string, req *domain.B2cResult) {
 	}
 
 	payload := map[string]any{
+		"id":         payment.Id,
 		"status":     req.Result.ResultCode,
 		"message":    req.Result.ResultDesc,
 		"request_id": payment.RequestId,
 		"amount":     payment.Amount,
-		"reference":  payment.Meta.Get("reference"),
+		"reference":  payment.Meta.Get("TransactionReceipt"),
 	}
 
 	utils.NotifyClient(payment.CallbackUrl, payload)

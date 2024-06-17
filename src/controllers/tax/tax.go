@@ -109,6 +109,7 @@ func TimeoutPayment(id string) {
 	}
 
 	payload := map[string]any{
+		"id":         payment.Id,
 		"status":     2,
 		"request_id": payment.RequestId,
 		"amount":     payment.Amount,
@@ -149,6 +150,7 @@ func ResultPayment(id string, req *domain.TaxResult) {
 	}
 
 	payload := map[string]any{
+		"id":         payment.Id,
 		"status":     req.Result.ResultCode,
 		"request_id": payment.RequestId,
 		"amount":     payment.Amount,

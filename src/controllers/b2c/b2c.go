@@ -11,30 +11,8 @@ import (
 	"github.com/ochom/mpesa/src/controllers/auth"
 	"github.com/ochom/mpesa/src/domain"
 	"github.com/ochom/mpesa/src/models"
+	"github.com/ochom/mpesa/src/utils"
 )
-
-func notifyClient(url string, data *models.Payment) {
-	if url == "" {
-		return
-	}
-
-	headers := map[string]string{
-		"Content-Type": "application/json",
-	}
-
-	res, err := gttp.Post(url, headers, helpers.ToBytes(data))
-	if err != nil {
-		logs.Error("failed to make request: %v", err)
-		return
-	}
-
-	if res.Status > 201 {
-		logs.Error("request failed status: %d body: %v", res.Status, string(res.Body))
-		return
-	}
-
-	logs.Info("request successful status: %d body: %v", res.Status, string(res.Body))
-}
 
 func InitiatePayment(req domain.B2cRequest) {
 	payment := models.NewPayment(req.RequestId, req.PhoneNumber, req.Amount, req.CallbackUrl)
@@ -55,6 +33,9 @@ func InitiatePayment(req domain.B2cRequest) {
 	initiatorPassword := config.MpesaB2CInitiatorPassword
 	securityCredential := auth.GetSecurityCredentials("mpesa_b2c_security", certPath, initiatorPassword)
 
+	resultUrl := fmt.Sprintf("%s/b2c/result?id=%s", config.BaseUrl, payment.Id)
+	timeoutUrl := fmt.Sprintf("%s/b2c/timeout?id=%s", config.BaseUrl, payment.Id)
+
 	payload := map[string]string{
 		"OriginatorConversationID": payment.Id,
 		"InitiatorName":            config.MpesaB2CInitiatorName,
@@ -64,8 +45,8 @@ func InitiatePayment(req domain.B2cRequest) {
 		"PartyA":                   config.MpesaB2CShortCode,
 		"PartyB":                   payment.PhoneNumber,
 		"Remarks":                  config.MpesaB2CPaymentComment,
-		"QueueTimeOutURL":          config.MpesaB2CQueueTimeoutUrl,
-		"ResultURL":                config.MpesaB2CResultUrl,
+		"QueueTimeOutURL":          resultUrl,
+		"ResultURL":                timeoutUrl,
 		"Occassion":                "Payout",
 	}
 
@@ -99,7 +80,23 @@ func InitiatePayment(req domain.B2cRequest) {
 	}
 }
 
-func ResultBusinessPayment(id string, req *domain.B2cResult) {
+func TimeoutPayment(id string) {
+	payment, err := sql.FindOneById[models.Payment](id)
+	if err != nil {
+		logs.Error("could not find payment: %v", err)
+		return
+	}
+
+	payload := map[string]any{
+		"status":     2,
+		"request_id": payment.RequestId,
+		"amount":     payment.Amount,
+	}
+
+	utils.NotifyClient(payment.CallbackUrl, payload)
+}
+
+func ResultPayment(id string, req *domain.B2cResult) {
 	payment, err := sql.FindOneById[models.Payment](id)
 	if err != nil {
 		logs.Error("could not find payment: %v", err)
@@ -129,5 +126,13 @@ func ResultBusinessPayment(id string, req *domain.B2cResult) {
 		return
 	}
 
-	notifyClient(payment.CallbackUrl, nil)
+	payload := map[string]any{
+		"status":     req.Result.ResultCode,
+		"message":    req.Result.ResultDesc,
+		"request_id": payment.RequestId,
+		"amount":     payment.Amount,
+		"reference":  payment.Meta.Get("reference"),
+	}
+
+	utils.NotifyClient(payment.CallbackUrl, payload)
 }

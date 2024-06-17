@@ -47,7 +47,8 @@ func New() *fiber.App {
 	b2c := v1.Group("b2c")
 	b2c.Use(b2cCors())
 	b2c.Post("/initiate", handlers.HandleInitiatePayment)
-	b2c.Post("/callback", handlers.HandlePaymentCallback)
+	b2c.Post("/result", handlers.HandleB2CResult)
+	b2c.Post("/timeout", handlers.HandleB2cTimeout)
 
 	// tax ...
 	tax := v1.Group("/tax")

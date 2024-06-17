@@ -26,8 +26,6 @@ var (
 	MpesaB2CInitiatorPassword = env.Get("MPESA_B2C_INITIATOR_PASSWORD")
 	MpesaB2CCertificatePath   = env.Get("MPESA_B2C_CERTIFICATE_PATH", "./certs/cert.cer")
 	MpesaB2CPaymentComment    = env.Get("MPESA_B2C_PAYMENT_COMMENT", "Payment")
-	MpesaB2CQueueTimeoutUrl   = env.Get("MPESA_B2C_QUEUE_TIMEOUT_URL")
-	MpesaB2CResultUrl         = env.Get("MPESA_B2C_RESULT_URL")
 
 	// Tax Remittance credentials
 	TaxAllowedOrigins       = env.Get("TAX__REMITTANCE_ ALLOWED_ORIGINS")

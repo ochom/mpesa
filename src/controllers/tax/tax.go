@@ -29,8 +29,8 @@ func InitiatePayment(req *domain.TaxRequest) {
 		"Content-Type":  "application/json",
 	}
 
-	certPath := config.MpesaB2CCertificatePath
-	initiatorPassword := config.MpesaB2CInitiatorPassword
+	certPath := config.MpesaTaxCertificatePath
+	initiatorPassword := config.MpesaTaxInitiatorPassword
 
 	resultUrl := fmt.Sprintf("%s/tax/result?id=%s", config.BaseUrl, payment.Id)
 	timeoutUrl := fmt.Sprintf("%s/tax/timeout?id=%s", config.BaseUrl, payment.Id)

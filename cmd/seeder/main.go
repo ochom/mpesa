@@ -21,7 +21,7 @@ func init() {
 	// init sqlite database
 	cfg := sql.Config{
 		Driver: sql.Sqlite,
-		Url:    "seeder.db",
+		Url:    "data/seeder.db",
 	}
 
 	if err := sql.New(&cfg); err != nil {

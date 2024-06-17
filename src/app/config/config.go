@@ -4,7 +4,8 @@ import "github.com/ochom/gutils/env"
 
 var (
 	// BaseUrl used for callbacks to this application
-	DatabaseUrl  = env.Get("DATABASE_URL")
+	DbDriver     = env.Int("DATABASE_DRIVER", 0)
+	DbUrl        = env.Get("DATABASE_URL")
 	BaseUrl      = env.Get("BASE_URL")
 	MpesaAuthUrl = env.Get("MPESA_AUTH_URL")
 	MpesaApiUrl  = env.Get("MPESA_API_URL")

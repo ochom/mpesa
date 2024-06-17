@@ -11,30 +11,8 @@ import (
 	"github.com/ochom/mpesa/src/controllers/auth"
 	"github.com/ochom/mpesa/src/domain"
 	"github.com/ochom/mpesa/src/models"
+	"github.com/ochom/mpesa/src/utils"
 )
-
-func notifyClient(url string, payload any) {
-	if url == "" {
-		return
-	}
-
-	headers := map[string]string{
-		"Content-Type": "application/json",
-	}
-
-	res, err := gttp.Post(url, headers, helpers.ToBytes(payload))
-	if err != nil {
-		logs.Error("failed to make request: %v", err)
-		return
-	}
-
-	if res.Status > 201 {
-		logs.Error("request failed status: %d body: %v", res.Status, string(res.Body))
-		return
-	}
-
-	logs.Info("request successful status: %d body: %v", res.Status, string(res.Body))
-}
 
 func InitiatePayment(req *domain.TaxRequest) {
 	payment := models.NewTaxPayment(req.RequestId, req.ShortCode, req.PaymentRequestNumber, req.Amount, req.CallbackUrl)
@@ -116,7 +94,9 @@ func TimeoutPayment(id string) {
 		"reference":  payment.PaymentRequestNumber,
 	}
 
-	notifyClient(payment.CallbackUrl, payload)
+	if err := utils.NotifyClient(payment.CallbackUrl, payload); err != nil {
+		logs.Error("failed to notify client: %v", err)
+	}
 }
 
 func ResultPayment(id string, req *domain.TaxResult) {
@@ -158,5 +138,7 @@ func ResultPayment(id string, req *domain.TaxResult) {
 		"message":    req.Result.ResultDesc,
 	}
 
-	notifyClient(payment.CallbackUrl, payload)
+	if err := utils.NotifyClient(payment.CallbackUrl, payload); err != nil {
+		logs.Error("failed to notify client: %v", err)
+	}
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/ochom/mpesa/src/controllers/auth"
 	"github.com/ochom/mpesa/src/domain"
 	"github.com/ochom/mpesa/src/models"
+	"github.com/ochom/mpesa/src/utils"
 )
 
 func hash(shortCode, passKey, timeStamp string) string {
@@ -20,38 +21,8 @@ func hash(shortCode, passKey, timeStamp string) string {
 	return base64.StdEncoding.EncodeToString([]byte(join))
 }
 
-func notifyClient(url string, err error) {
-	if url == "" {
-		return
-	}
-
-	payload := map[string]any{
-		"status":  0,
-		"message": "successful",
-	}
-
-	if err != nil {
-		payload["status"] = 1
-		payload["message"] = err.Error()
-	}
-
-	headers := map[string]string{
-		"Content-Type": "application/json",
-	}
-
-	res, err := gttp.Post(url, headers, payload)
-	if err != nil {
-		logs.Error("failed to notify client: %v", err)
-		return
-	}
-
-	if res.Status > 201 {
-		logs.Error("failed to notify client: %v", string(res.Body))
-	}
-}
-
 func InitiatePayment(req *domain.MpesaExpressRequest) {
-	mpe := models.NewMpesaExpress(req.PhoneNumber, req.Amount, req.CallbackUrl, req.AccountReference)
+	mpe := models.NewCustomerPayment(req.PhoneNumber, req.Amount, req.CallbackUrl, req.AccountReference)
 	if err := sql.Create(mpe); err != nil {
 		logs.Error("failed to create mpesa express: %v", err)
 	}
@@ -109,15 +80,14 @@ func InitiatePayment(req *domain.MpesaExpressRequest) {
 }
 
 func ResultPayment(id string, req *domain.MpesaExpressCallback) {
-	mpe, err := sql.FindOneById[models.MpesaExpress](id)
+	mpe, err := sql.FindOneById[models.CustomerPayment](id)
 	if err != nil {
 		logs.Error("failed to find mpesa express: %v", err)
 		return
 	}
 
 	if req.Body.StkCallback.ResultCode != 0 {
-		notifyClient(mpe.CallbackUrl, fmt.Errorf("%s", req.Body.StkCallback.ResultDescription))
-		return
+		logs.Error("failed to process payment: %v", req.Body.StkCallback.ResultDescription)
 	}
 
 	meta := map[string]any{}
@@ -132,5 +102,16 @@ func ResultPayment(id string, req *domain.MpesaExpressCallback) {
 		logs.Error("failed to update mpesa express: %v", err)
 	}
 
-	notifyClient(mpe.CallbackUrl, nil)
+	payload := map[string]any{
+		"id":           mpe.Id,
+		"status":       req.Body.StkCallback.ResultCode,
+		"message":      req.Body.StkCallback.ResultDescription,
+		"amount":       mpe.Amount,
+		"phone_number": mpe.PhoneNumber,
+		"reference":    mpe.Meta.Get("MpesaReceiptNumber"),
+	}
+
+	if err := utils.NotifyClient(mpe.CallbackUrl, payload); err != nil {
+		logs.Error("failed to notify client: %v", err)
+	}
 }

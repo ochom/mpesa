@@ -15,7 +15,7 @@ import (
 )
 
 func InitiatePayment(req domain.B2cRequest) {
-	payment := models.NewPayment(req.RequestId, req.PhoneNumber, req.Amount, req.CallbackUrl)
+	payment := models.NewBusinessPayment(req.RequestId, req.PhoneNumber, req.Amount, req.CallbackUrl)
 	if err := sql.Create(payment); err != nil {
 		logs.Error("Error creating payment: %v", err)
 		return
@@ -81,7 +81,7 @@ func InitiatePayment(req domain.B2cRequest) {
 }
 
 func TimeoutPayment(id string) {
-	payment, err := sql.FindOneById[models.Payment](id)
+	payment, err := sql.FindOneById[models.BusinessPayment](id)
 	if err != nil {
 		logs.Error("could not find payment: %v", err)
 		return
@@ -94,11 +94,13 @@ func TimeoutPayment(id string) {
 		"amount":     payment.Amount,
 	}
 
-	utils.NotifyClient(payment.CallbackUrl, payload)
+	if err := utils.NotifyClient(payment.CallbackUrl, payload); err != nil {
+		logs.Error("could not notify client: %v", err)
+	}
 }
 
 func ResultPayment(id string, req *domain.B2cResult) {
-	payment, err := sql.FindOneById[models.Payment](id)
+	payment, err := sql.FindOneById[models.BusinessPayment](id)
 	if err != nil {
 		logs.Error("could not find payment: %v", err)
 		return
@@ -136,5 +138,7 @@ func ResultPayment(id string, req *domain.B2cResult) {
 		"reference":  payment.Meta.Get("TransactionReceipt"),
 	}
 
-	utils.NotifyClient(payment.CallbackUrl, payload)
+	if err := utils.NotifyClient(payment.CallbackUrl, payload); err != nil {
+		logs.Error("could not notify client: %v", err)
+	}
 }

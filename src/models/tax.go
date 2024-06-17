@@ -6,7 +6,7 @@ import (
 	"github.com/ochom/gutils/uuid"
 )
 
-// TaxPayment store mpesa b2c requests and respective responses
+// TaxPayment store data when business makes a tax payment
 type TaxPayment struct {
 	Id                       string    `json:"id"`
 	Amount                   string    `json:"amount"`

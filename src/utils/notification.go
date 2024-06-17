@@ -1,14 +1,15 @@
 package utils
 
 import (
+	"fmt"
+
 	"github.com/ochom/gutils/gttp"
 	"github.com/ochom/gutils/helpers"
-	"github.com/ochom/gutils/logs"
 )
 
-func NotifyClient(url string, payload any) {
+func NotifyClient(url string, payload any) error {
 	if url == "" {
-		return
+		return fmt.Errorf("no url provided")
 	}
 
 	headers := map[string]string{
@@ -17,14 +18,12 @@ func NotifyClient(url string, payload any) {
 
 	res, err := gttp.Post(url, headers, helpers.ToBytes(payload))
 	if err != nil {
-		logs.Error("failed to make request: %v", err)
-		return
+		return fmt.Errorf("failed to make request: %v", err)
 	}
 
 	if res.Status > 201 {
-		logs.Error("request failed status: %d body: %v", res.Status, string(res.Body))
-		return
+		return fmt.Errorf("request failed status: %d body: %v", res.Status, string(res.Body))
 	}
 
-	logs.Info("request successful status: %d body: %v", res.Status, string(res.Body))
+	return nil
 }

@@ -2,5 +2,9 @@ package models
 
 // GetSchema get schema
 func GetSchema() []any {
-	return []any{}
+	return []any{
+		&BusinessPayment{},
+		&CustomerPayment{},
+		&TaxPayment{},
+	}
 }

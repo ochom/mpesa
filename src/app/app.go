@@ -3,9 +3,9 @@ package app
 import (
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
-	"github.com/ochom/gutils/env"
 	"github.com/ochom/gutils/logs"
 	"github.com/ochom/gutils/sql"
+	"github.com/ochom/mpesa/src/app/config"
 	"github.com/ochom/mpesa/src/handlers"
 	"github.com/ochom/mpesa/src/models"
 )
@@ -14,7 +14,7 @@ func init() {
 	// init database
 	cfg := sql.Config{
 		DatabaseType: sql.MySQL,
-		Url:          env.Get("DATABASE_URL"),
+		Url:          config.DatabaseUrl,
 	}
 
 	if err := sql.New(&cfg); err != nil {

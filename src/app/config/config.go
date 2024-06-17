@@ -4,6 +4,7 @@ import "github.com/ochom/gutils/env"
 
 var (
 	// BaseUrl used for callbacks to this application
+	DatabaseUrl  = env.Get("DATABASE_URL")
 	BaseUrl      = env.Get("BASE_URL")
 	MpesaAuthUrl = env.Get("MPESA_AUTH_URL")
 	MpesaApiUrl  = env.Get("MPESA_API_URL")
@@ -24,11 +25,11 @@ var (
 	MpesaB2CConsumerSecret    = env.Get("MPESA_B2C_CONSUMER_SECRET")
 	MpesaB2CInitiatorName     = env.Get("MPESA_B2C_INITIATOR_NAME")
 	MpesaB2CInitiatorPassword = env.Get("MPESA_B2C_INITIATOR_PASSWORD")
-	MpesaB2CCertificatePath   = env.Get("MPESA_B2C_CERTIFICATE_PATH", "./certs/cert.cer")
-	MpesaB2CPaymentComment    = env.Get("MPESA_B2C_PAYMENT_COMMENT", "Payment")
+	MpesaB2CCertificatePath   = env.Get("MPESA_B2C_CERTIFICATE_PATH")
+	MpesaB2CPaymentComment    = env.Get("MPESA_B2C_PAYMENT_COMMENT")
 
 	// Tax Remittance credentials
-	TaxAllowedOrigins       = env.Get("TAX__REMITTANCE_ ALLOWED_ORIGINS")
+	TaxAllowedOrigins       = env.Get("TAX__REMITTANCE_ALLOWED_ORIGINS")
 	MpesaTaxConsumerSecrete = env.Get("MPESA_TAX_CONSUMER_SECRET")
 	MpesaTaxConsumerKey     = env.Get("MPESA_TAX_CONSUMER_KEY")
 )

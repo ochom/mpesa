@@ -1,8 +1,6 @@
 package app
 
 import (
-	"strings"
-
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/ochom/mpesa/src/app/config"
@@ -10,18 +8,13 @@ import (
 
 func b2cCors() fiber.Handler {
 	crs := cors.ConfigDefault
-	crs.AllowOriginsFunc = func(origin string) bool {
-		return strings.Contains(config.B2CAllowedOrigins, origin)
-	}
+	crs.AllowOrigins = config.B2CAllowedOrigins
 
 	return cors.New(crs)
 }
 
 func taxCors() fiber.Handler {
 	crs := cors.ConfigDefault
-	crs.AllowOriginsFunc = func(origin string) bool {
-		return strings.Contains(config.TaxAllowedOrigins, origin)
-	}
-
+	crs.AllowOrigins = config.TaxAllowedOrigins
 	return cors.New(crs)
 }

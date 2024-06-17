@@ -36,7 +36,7 @@ func notifyClient(url string, payload any) {
 	logs.Info("request successful status: %d body: %v", res.Status, string(res.Body))
 }
 
-func InitiatePayment(req domain.TaxRequest) {
+func InitiatePayment(req *domain.TaxRequest) {
 	payment := models.NewTaxPayment(req.RequestId, req.ShortCode, req.PaymentRequestNumber, req.Amount, req.CallbackUrl)
 	if err := sql.Create(payment); err != nil {
 		logs.Error("Error creating payment: %v", err)
@@ -101,7 +101,24 @@ func InitiatePayment(req domain.TaxRequest) {
 	}
 }
 
-func ResultBusinessPayment(id string, req *domain.B2cResult) {
+func TimeoutPayment(id string) {
+	payment, err := sql.FindOneById[models.TaxPayment](id)
+	if err != nil {
+		logs.Error("could not find payment: %v", err)
+		return
+	}
+
+	payload := map[string]any{
+		"status":     2,
+		"request_id": payment.RequestId,
+		"amount":     payment.Amount,
+		"reference":  payment.PaymentRequestNumber,
+	}
+
+	notifyClient(payment.CallbackUrl, payload)
+}
+
+func ResultPayment(id string, req *domain.TaxResult) {
 	payment, err := sql.FindOneById[models.TaxPayment](id)
 	if err != nil {
 		logs.Error("could not find payment: %v", err)

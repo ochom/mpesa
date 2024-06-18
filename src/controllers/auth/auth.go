@@ -30,18 +30,13 @@ func Authenticate(tokenName, username, password string) string {
 		return ""
 	}
 
-	if res.Status > 201 {
-		logs.Error("request failed status: %d body: %v", res.Status, string(res.Body))
-		return ""
-	}
-
 	tokens := helpers.FromBytes[map[string]string](res.Body)
-	if len(tokens) == 0 {
+	token := tokens["access_token"]
+	if token == "" {
 		logs.Error("failed to authenticate: %v", string(res.Body))
 		return ""
 	}
 
-	token := tokens["access_token"]
 	cache.SetWithExpiry(tokenName, []byte(token), 59*time.Minute)
 	return token
 }

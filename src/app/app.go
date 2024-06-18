@@ -36,9 +36,9 @@ func New() *fiber.App {
 	// tax ...
 	tax := v1.Group("/tax")
 	tax.Use(taxCors())
-	tax.Post("/remit", handlers.HandleTaxRemittance)
-	tax.Post("/result", handlers.HandleTaxRemittance)
-	tax.Post("/timeout", handlers.HandleTaxRemittance)
+	tax.Post("/initiate", handlers.HandleTaxRemittance)
+	tax.Post("/result", handlers.HandleTaxResult)
+	tax.Post("/timeout", handlers.HandleTaxTimeout)
 
 	return app
 }

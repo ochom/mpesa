@@ -1,10 +1,10 @@
 package domain
 
 type B2cRequest struct {
-	RequestId   string `json:"request_id"`
-	PhoneNumber string `json:"phone_number"`
-	Amount      string `json:"amount"`
-	CallbackUrl string `json:"callback_url"`
+	RequestId   string `json:"request_id" validate:"required"`
+	PhoneNumber string `json:"phone_number" validate:"required"`
+	Amount      string `json:"amount" validate:"required"`
+	CallbackUrl string `json:"callback_url" validate:"required"`
 }
 
 type B2cResult struct {

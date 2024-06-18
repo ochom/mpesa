@@ -50,7 +50,7 @@ services:
       - MPESA_B2C_PAYMENT_COMMENT=""
 
       # Tax Remittance credentials
-      - TAX__REMITTANCE_ALLOWED_ORIGINS=""
+      - TAX_REMITTANCE_ALLOWED_ORIGINS=""
       - MPESA_TAX_CONSUMER_SECRET=""
       - MPESA_TAX_CONSUMER_KEY=""
       - MPESA_TAX_INITIATOR_PASSWORD=""

@@ -28,6 +28,7 @@ WORKDIR /
 COPY --from=build /server .
 
 RUN mkdir -p /data
+RUN mkdir -p /data/certs
 
 EXPOSE 8080
 

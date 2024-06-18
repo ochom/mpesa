@@ -29,7 +29,7 @@ var (
 	MpesaB2CPaymentComment    = env.Get("MPESA_B2C_PAYMENT_COMMENT")
 
 	// Tax Remittance credentials
-	TaxAllowedOrigins         = env.Get("TAX__REMITTANCE_ALLOWED_ORIGINS")
+	TaxAllowedOrigins         = env.Get("TAX_REMITTANCE_ALLOWED_ORIGINS")
 	MpesaTaxConsumerSecrete   = env.Get("MPESA_TAX_CONSUMER_SECRET")
 	MpesaTaxConsumerKey       = env.Get("MPESA_TAX_CONSUMER_KEY")
 	MpesaTaxInitiatorPassword = env.Get("MPESA_TAX_INITIATOR_PASSWORD")

@@ -24,11 +24,11 @@ func HandleStkPush(ctx fiber.Ctx) error {
 	return ctx.JSON(fiber.Map{"message": "success"})
 }
 
-// HandleStkCallback ...
-func HandleStkCallback(ctx fiber.Ctx) error {
-	id := ctx.Query("id")
+// HandleResult ...
+func HandleC2BResult(ctx fiber.Ctx) error {
+	id := ctx.Query("refId")
 	if id == "" {
-		return ctx.JSON(fiber.Map{"message": "failed"})
+		return ctx.JSON(fiber.Map{"message": "failed, refId is required"})
 	}
 
 	req, err := parseData[domain.MpesaExpressCallback](ctx)
@@ -112,7 +112,7 @@ func HandleSoapValidation(ctx fiber.Ctx) error {
 // HandleSoapConfirmation ...
 func HandleSoapConfirmation(ctx fiber.Ctx) error {
 	var req domain.SoapPaymentConfirmationRequest
-	if err := ctx.Bind().XML(req); err != nil {
+	if err := ctx.Bind().XML(&req); err != nil {
 		logs.Error("Error decoding XML: %v", err)
 		return err
 	}

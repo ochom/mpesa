@@ -29,19 +29,19 @@ type MpesaExpressCallback struct {
 
 // ValidationRequest store mpesa stk-push requests and respective responses
 type ValidationRequest struct {
-	TransactionType   string
-	TransID           string
-	TransTime         string
-	TransAmount       string
-	BusinessShortCode string
-	BillRefNumber     string
-	InvoiceNumber     string
-	OrgAccountBalance string
-	ThirdPartyTransID string
-	MSISDN            string
-	FirstName         string
-	MiddleName        string
-	LastName          string
+	TransactionType   string `json:"TransactionType,omitempty"`
+	TransID           string `json:"TransID,omitempty"`
+	TransTime         string `json:"TransTime,omitempty"`
+	TransAmount       string `json:"TransAmount,omitempty"`
+	BusinessShortCode string `json:"BusinessShortCode,omitempty"`
+	BillRefNumber     string `json:"BillRefNumber,omitempty"`
+	InvoiceNumber     string `json:"InvoiceNumber,omitempty"`
+	OrgAccountBalance string `json:"OrgAccountBalance,omitempty"`
+	ThirdPartyTransID string `json:"ThirdPartyTransID,omitempty"`
+	MSISDN            string `json:"MSISDN,omitempty"`
+	FirstName         string `json:"FirstName,omitempty"`
+	MiddleName        string `json:"MiddleName,omitempty"`
+	LastName          string `json:"LastName,omitempty"`
 }
 
 // SoapPaymentConfirmationRequest represents the structure of the XML content

@@ -2,33 +2,48 @@ package models
 
 import (
 	"time"
+
+	"github.com/ochom/gutils/helpers"
 )
 
 // CustomerPayment store data when customer makes a payment to business
 type CustomerPayment struct {
-	Id                  int       `json:"id"`
-	Amount              string    `json:"amount"`
-	PhoneNumber         string    `json:"phone_number"`
-	AccountReference    string    `json:"account_reference"`
-	CallbackUrl         string    `json:"callback_url"`
-	MerchantRequestId   string    `json:"merchant_request_id"`
-	CheckoutRequestId   string    `json:"checkout_request_id"`
-	ResponseCode        string    `json:"response_code"`
-	ResponseDescription string    `json:"response_description"`
-	ResultCode          int       `json:"result_code"`
-	ResultDescription   string    `json:"result_description"`
-	Meta                MetaData  `json:"meta" gorm:"type:json"`
-	CreatedAt           time.Time `json:"created_at"`
-	UpdatedAt           time.Time `json:"updated_at"`
-	DeletedAt           time.Time `json:"deleted_at"`
+	Id                      int       `json:"id,omitempty" gorm:"primaryKey"`
+	TransactionType         string    `json:"transaction_type,omitempty"`
+	TransactionID           string    `json:"transaction_id,omitempty" gorm:"unique"`
+	TransactionTime         string    `json:"transaction_time,omitempty"`
+	PhoneNumber             string    `json:"phone_number,omitempty" gorm:"index"`
+	TransactionAmount       string    `json:"transaction_amount,omitempty"`
+	BillRefNumber           string    `json:"bill_ref_number,omitempty"`
+	InvoiceNumber           string    `json:"invoice_number,omitempty"`
+	ThirdPartyTransactionID string    `json:"third_party_transaction_id,omitempty"`
+	CreatedAt               time.Time `json:"created_at,omitempty"`
+	UpdatedAt               time.Time `json:"updated_at,omitempty"`
+	DeletedAt               time.Time `json:"deleted_at,omitempty"`
 }
 
 // NewCustomerPayment create a new CustomerPayment
-func NewCustomerPayment(phone, amount, cbUrl, AccountReference string) *CustomerPayment {
+func NewCustomerPayment(txId, txTime, txAmount, billRefNumber, invoiceNumber, msisdn string) *CustomerPayment {
 	return &CustomerPayment{
-		Amount:           amount,
-		PhoneNumber:      phone,
-		AccountReference: AccountReference,
-		CallbackUrl:      cbUrl,
+		TransactionType:   "CustomerPayBillOnline",
+		TransactionID:     txId,
+		TransactionTime:   txTime,
+		TransactionAmount: txAmount,
+		BillRefNumber:     billRefNumber,
+		InvoiceNumber:     invoiceNumber,
+		PhoneNumber:       getPhoneNumber(billRefNumber, msisdn),
 	}
+}
+
+func getPhoneNumber(billRef, msisdn string) string {
+	if phone := helpers.ParseMobile(billRef); phone != "" {
+		return phone
+	}
+
+	if phone := helpers.ParseMobile(msisdn); phone != "" {
+		return phone
+	}
+
+	// TODO implement query phone number using hash
+	return ""
 }

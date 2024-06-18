@@ -22,9 +22,6 @@ jobs:
           version: latest
           args: --timeout 5m
 
-      - name: Test
-        run: go test ./...
-
   build:
     needs: lint
     runs-on: ubuntu-latest

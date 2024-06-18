@@ -4,3 +4,4 @@ tmp
 *.csv
 certs
 data
+secret.sh

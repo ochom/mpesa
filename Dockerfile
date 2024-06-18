@@ -14,7 +14,8 @@ RUN go mod download
 
 COPY . ./
 
-RUN go build -o /server cmd/server/main.go
+RUN apk add --no-cache gcc g++ git openssh-client
+RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /server cmd/server/main.go
 
 
 
@@ -28,6 +29,7 @@ WORKDIR /
 COPY --from=build /server .
 
 RUN mkdir -p /data
+RUN mkdir -p /data/certs
 
 EXPOSE 8080
 

@@ -87,13 +87,13 @@ func populateNumbers() {
 	createNumber("25411", 10000000, "%07d")
 }
 
-func createNumber(prefix string, max int, format string) error {
+func createNumber(prefix string, max int, format string) {
 	logs.Info("Seeding %s ...", prefix)
 	start := time.Now()
 
 	csvFile, err := os.Create("numbers.csv")
 	if err != nil {
-		return err
+		return
 	}
 	defer csvFile.Close()
 
@@ -107,11 +107,10 @@ func createNumber(prefix string, max int, format string) error {
 	}
 
 	if err := writer.WriteAll(records); err != nil {
-		return err
+		return
 	}
 
 	logs.Info("Seeding [%s] took %s", prefix, time.Since(start))
-	return nil
 }
 
 func hashNumber(num string) string {

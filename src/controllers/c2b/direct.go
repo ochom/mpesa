@@ -11,7 +11,7 @@ import (
 
 // ValidatePayment  validates payments received through REST API
 func ValidatePayment(req *domain.ValidationRequest) bool {
-	if config.ClientDepositValidationUrl == "" {
+	if config.MpesaC2BValidationUrl == "" {
 		return true
 	}
 
@@ -20,7 +20,7 @@ func ValidatePayment(req *domain.ValidationRequest) bool {
 	}
 
 	payload := helpers.ToBytes(req)
-	res, err := gttp.Post(config.ClientDepositValidationUrl, headers, payload)
+	res, err := gttp.Post(config.MpesaC2BValidationUrl, headers, payload)
 	if err != nil {
 		logs.Error("failed to make request: %v", err)
 		return false
@@ -36,11 +36,11 @@ func ValidatePayment(req *domain.ValidationRequest) bool {
 
 // ConfirmPayment confirms payments received through REST API
 func ConfirmPayment(req *domain.ValidationRequest) {
-	if config.ClientDepositConfirmationUrl == "" {
+	if config.MpesaC2BConfirmationUrl == "" {
 		return
 	}
 
-	if err := utils.NotifyClient(config.ClientDepositConfirmationUrl, req); err != nil {
+	if err := utils.NotifyClient(config.MpesaC2BConfirmationUrl, req); err != nil {
 		logs.Error("failed to notify client: %v", err)
 	}
 }

@@ -10,12 +10,12 @@ var (
 	MpesaApiUrl = env.Get("MPESA_API_URL")
 
 	// MpesaC2B credentials
-	MpesaC2BShortCode            = env.Get("MPESA_C2B_SHORT_CODE")
-	MpesaC2BPassKey              = env.Get("MPESA_C2B_PASSKEY")
-	MpesaC2BConsumerKey          = env.Get("MPESA_C2B_CONSUMER_KEY")
-	MpesaC2BConsumerSecret       = env.Get("MPESA_C2B_CONSUMER_SECRET")
-	ClientDepositValidationUrl   = env.Get("CLIENT_DEPOSIT_VALIDATION_URL")
-	ClientDepositConfirmationUrl = env.Get("CLIENT_DEPOSIT_CONFIRMATION_URL")
+	MpesaC2BShortCode       = env.Get("MPESA_C2B_SHORT_CODE")
+	MpesaC2BPassKey         = env.Get("MPESA_C2B_PASSKEY")
+	MpesaC2BConsumerKey     = env.Get("MPESA_C2B_CONSUMER_KEY")
+	MpesaC2BConsumerSecret  = env.Get("MPESA_C2B_CONSUMER_SECRET")
+	MpesaC2BValidationUrl   = env.Get("CLIENT_DEPOSIT_VALIDATION_URL")
+	MpesaC2BConfirmationUrl = env.Get("CLIENT_DEPOSIT_CONFIRMATION_URL")
 
 	//MpesaB2C credentials
 	B2CAllowedOrigins         = env.Get("B2C_ALLOWED_ORIGINS")

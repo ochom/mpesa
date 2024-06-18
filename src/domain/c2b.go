@@ -1,5 +1,7 @@
 package domain
 
+import "encoding/xml"
+
 // MpesaExpressRequest the payload required to initiate an mpesa stk push
 type MpesaExpressRequest struct {
 	Amount           string `json:"amount"`
@@ -41,4 +43,34 @@ type ValidationRequest struct {
 	FirstName         string
 	MiddleName        string
 	LastName          string
+}
+
+// SoapPaymentConfirmationRequest represents the structure of the XML content
+type SoapPaymentConfirmationRequest struct {
+	XMLName xml.Name `xml:"http://schemas.xmlsoap.org/soap/envelope/ Envelope"`
+	Body    Body     `xml:"Body"`
+}
+
+// Body represents the body of the SOAP envelope containing the payment confirmation request
+type Body struct {
+	C2BPaymentConfirmationRequest C2BPaymentConfirmationRequest `xml:"http://cps.huawei.com/cpsinterface/c2bpayment C2BPaymentConfirmationRequest"`
+}
+
+// C2BPaymentConfirmationRequest represents the structure of the payment confirmation request
+type C2BPaymentConfirmationRequest struct {
+	TransType         string    `xml:"TransType"`
+	TransID           string    `xml:"TransID"`
+	TransTime         string    `xml:"TransTime"`
+	TransAmount       string    `xml:"TransAmount"`
+	BusinessShortCode string    `xml:"BusinessShortCode"`
+	BillRefNumber     string    `xml:"BillRefNumber"`
+	OrgAccountBalance string    `xml:"OrgAccountBalance"`
+	MSISDN            string    `xml:"MSISDN"`
+	KYCInfo           []KYCInfo `xml:"KYCInfo"`
+}
+
+// KYCInfo represents the KYCInfo element within SoapPaymentConfirmationRequest
+type KYCInfo struct {
+	KYCName  string `xml:"KYCName"`
+	KYCValue string `xml:"KYCValue"`
 }

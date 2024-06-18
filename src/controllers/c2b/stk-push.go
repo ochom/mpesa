@@ -111,6 +111,13 @@ func ResultPayment(id string, req *domain.MpesaExpressCallback) {
 		"reference":    mpe.Meta.Get("MpesaReceiptNumber"),
 	}
 
+	// if a static callback url ir registered. the confirmation will come through the registered url
+	// do not notify client
+	if config.MpesaC2BConfirmationUrl != "" {
+		logs.Info("client is notified with the registered url")
+		return
+	}
+
 	if err := utils.NotifyClient(mpe.CallbackUrl, payload); err != nil {
 		logs.Error("failed to notify client: %v", err)
 	}

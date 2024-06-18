@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/ochom/gutils/logs"
 	"github.com/ochom/gutils/uuid"
 	"github.com/ochom/mpesa/src/controllers/c2b"
 	"github.com/ochom/mpesa/src/domain"
@@ -107,13 +108,24 @@ func HandleSoapValidation(ctx fiber.Ctx) error {
 
 // HandleSoapConfirmation ...
 func HandleSoapConfirmation(ctx fiber.Ctx) error {
-	// TODO parse the data into SOAP data
-	req, err := parseData[domain.ValidationRequest](ctx)
-	if err != nil {
+	var req domain.SoapPaymentConfirmationRequest
+	if err := ctx.Bind().XML(req); err != nil {
+		logs.Error("Error decoding XML: %v", err)
 		return err
 	}
 
-	go c2b.ConfirmPayment(&req)
+	validationRequest := domain.ValidationRequest{
+		TransactionType:   req.Body.C2BPaymentConfirmationRequest.TransType,
+		TransID:           req.Body.C2BPaymentConfirmationRequest.TransID,
+		TransTime:         req.Body.C2BPaymentConfirmationRequest.TransTime,
+		TransAmount:       req.Body.C2BPaymentConfirmationRequest.TransAmount,
+		BusinessShortCode: req.Body.C2BPaymentConfirmationRequest.BusinessShortCode,
+		BillRefNumber:     req.Body.C2BPaymentConfirmationRequest.BillRefNumber,
+		OrgAccountBalance: req.Body.C2BPaymentConfirmationRequest.OrgAccountBalance,
+		MSISDN:            req.Body.C2BPaymentConfirmationRequest.MSISDN,
+	}
+
+	go c2b.ConfirmPayment(&validationRequest)
 
 	template := `<?xml version="1.0" encoding="UTF-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
@@ -124,7 +136,7 @@ func HandleSoapConfirmation(ctx fiber.Ctx) error {
     </soapenv:Body>
 </soapenv:Envelope>`
 
-	template = strings.Replace(template, "{TRANSACTION_ID}", req.TransID, 1)
+	template = strings.Replace(template, "{TRANSACTION_ID}", validationRequest.TransID, 1)
 
 	return ctx.SendString(template)
 }

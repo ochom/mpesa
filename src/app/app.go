@@ -3,29 +3,8 @@ package app
 import (
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
-	"github.com/ochom/gutils/logs"
-	"github.com/ochom/gutils/sql"
-	"github.com/ochom/mpesa/src/app/config"
 	"github.com/ochom/mpesa/src/handlers"
-	"github.com/ochom/mpesa/src/models"
 )
-
-func init() {
-	// init database
-	cfg := sql.Config{
-		Driver: sql.Driver(config.DbDriver),
-		Url:    config.DbUrl,
-	}
-
-	if err := sql.New(&cfg); err != nil {
-		logs.Fatal("failed to connect to database: %v", err)
-	}
-
-	// run migrations
-	if err := sql.Conn().AutoMigrate(models.GetSchema()...); err != nil {
-		logs.Fatal("failed to run migrations: %v", err)
-	}
-}
 
 func New() *fiber.App {
 	app := fiber.New()

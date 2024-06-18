@@ -31,6 +31,10 @@ func New() *fiber.App {
 	app := fiber.New()
 	app.Use(cors.New(cors.ConfigDefault))
 
+	app.Get("/", func(c fiber.Ctx) error {
+		return c.SendString("Hello Broker")
+	})
+
 	// register routes
 	v1 := app.Group("/v1")
 

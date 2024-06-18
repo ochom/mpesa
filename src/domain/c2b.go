@@ -4,10 +4,9 @@ import "encoding/xml"
 
 // MpesaExpressRequest the payload required to initiate an mpesa stk push
 type MpesaExpressRequest struct {
-	Amount           string `json:"amount"`
-	PhoneNumber      string `json:"phone_number"`
-	AccountReference string `json:"account_reference"`
-	CallbackUrl      string `json:"callback_url"`
+	Amount      string `json:"amount" validate:"required"`
+	PhoneNumber string `json:"phone_number" validate:"required"`
+	CallbackUrl string `json:"callback_url" validate:"required"`
 }
 
 // MpesaExpressCallback the response from an mpesa stk push

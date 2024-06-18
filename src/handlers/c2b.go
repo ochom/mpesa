@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/logs"
 	"github.com/ochom/gutils/uuid"
 	"github.com/ochom/mpesa/src/controllers/c2b"
@@ -16,6 +17,8 @@ func HandleStkPush(ctx fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+
+	req.PhoneNumber = helpers.ParseMobile(req.PhoneNumber)
 
 	go c2b.InitiatePayment(&req)
 	return ctx.JSON(fiber.Map{"message": "success"})

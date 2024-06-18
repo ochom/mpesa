@@ -9,6 +9,7 @@ import (
 	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/logs"
 	"github.com/ochom/gutils/sql"
+	"github.com/ochom/gutils/uuid"
 	"github.com/ochom/mpesa/src/app/config"
 	"github.com/ochom/mpesa/src/controllers/auth"
 	"github.com/ochom/mpesa/src/domain"
@@ -22,7 +23,8 @@ func hash(shortCode, passKey, timeStamp string) string {
 }
 
 func InitiatePayment(req *domain.MpesaExpressRequest) {
-	mpe := models.NewCustomerPayment(req.PhoneNumber, req.Amount, req.CallbackUrl, req.AccountReference)
+	refId := uuid.New()
+	mpe := models.NewCustomerPayment(req.PhoneNumber, req.Amount, req.CallbackUrl, refId)
 	if err := sql.Create(mpe); err != nil {
 		logs.Error("failed to create mpesa express: %v", err)
 	}
@@ -41,13 +43,12 @@ func InitiatePayment(req *domain.MpesaExpressRequest) {
 		"PartyB":            config.MpesaC2BShortCode,
 		"PhoneNumber":       phoneNumber,
 		"CallBackURL":       callbackUrl,
-		"AccountReference":  req.AccountReference,
+		"AccountReference":  refId,
 		"TransactionDesc":   "Pay bill",
 	}
 
 	username := config.MpesaC2BConsumerKey
 	password := config.MpesaC2BConsumerSecret
-
 	headers := map[string]string{
 		"Authorization": "Bearer " + auth.Authenticate("mpesa_c2b_token", username, password),
 		"Content-Type":  "application/json",
@@ -57,6 +58,11 @@ func InitiatePayment(req *domain.MpesaExpressRequest) {
 	res, err := gttp.Post(url, headers, payload)
 	if err != nil {
 		logs.Error("failed to make request: %v", err)
+		return
+	}
+
+	if res.Status > 201 {
+		logs.Error("request failed status: %d body: %v", res.Status, string(res.Body))
 		return
 	}
 
@@ -73,10 +79,9 @@ func InitiatePayment(req *domain.MpesaExpressRequest) {
 	mpe.ResponseDescription = data["ResponseDescription"]
 
 	if data["ResponseCode"] != "0" {
+		logs.Error("initiate stk failed: ResponseDescription=>%s", data["ResponseDescription"])
 		return
 	}
-
-	logs.Info("success: %v", string(res.Body))
 }
 
 func ResultPayment(id string, req *domain.MpesaExpressCallback) {

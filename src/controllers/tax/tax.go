@@ -14,6 +14,7 @@ import (
 	"github.com/ochom/mpesa/src/utils"
 )
 
+// InitiatePayment initiates an mpesa tax payment
 func InitiatePayment(req *domain.TaxRequest) {
 	payment := models.NewTaxPayment(req.RequestId, req.ShortCode, req.PaymentRequestNumber, req.Amount, req.CallbackUrl)
 	if err := sql.Create(payment); err != nil {
@@ -79,6 +80,7 @@ func InitiatePayment(req *domain.TaxRequest) {
 	}
 }
 
+// TimeoutPayment processes tax payment timeout
 func TimeoutPayment(id string) {
 	payment, err := sql.FindOneById[models.TaxPayment](id)
 	if err != nil {
@@ -99,6 +101,7 @@ func TimeoutPayment(id string) {
 	}
 }
 
+// ResultPayment processes tax payment result
 func ResultPayment(id string, req *domain.TaxResult) {
 	payment, err := sql.FindOneById[models.TaxPayment](id)
 	if err != nil {

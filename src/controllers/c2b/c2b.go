@@ -18,11 +18,13 @@ import (
 	"github.com/ochom/mpesa/src/utils"
 )
 
+// hash hashes the shortcode, passkey and timestamp
 func hash(shortCode, passKey, timeStamp string) string {
 	join := shortCode + passKey + timeStamp
 	return base64.StdEncoding.EncodeToString([]byte(join))
 }
 
+// InitiatePayment initiates an mpesa c2b stk push
 func InitiatePayment(req *domain.MpesaExpressRequest) {
 	refId := uuid.New()
 	cache.SetWithExpiry(fmt.Sprintf("stk-%s", refId), helpers.ToBytes(req), 5*time.Minute)
@@ -71,6 +73,7 @@ func InitiatePayment(req *domain.MpesaExpressRequest) {
 	}
 }
 
+// ResultPayment processes the payment result for stk push
 func ResultPayment(id string, req *domain.MpesaExpressCallback) {
 	cacheBytes := cache.Get(fmt.Sprintf("stk-%s", id))
 	if cacheBytes == nil {

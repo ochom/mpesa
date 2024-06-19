@@ -103,7 +103,7 @@ func ResultPayment(id string, req *domain.MpesaExpressCallback) {
 	}
 
 	payload := map[string]any{
-		"id":           customerPayment.Id,
+		"id":           customerPayment.ID,
 		"status":       req.Body.StkCallback.ResultCode,
 		"message":      req.Body.StkCallback.ResultDescription,
 		"amount":       customerPayment.TransactionAmount,
@@ -150,7 +150,7 @@ func ConfirmPayment(req *domain.ValidationRequest) {
 	}
 
 	payload := map[string]any{
-		"id":           customerPayment.Id,
+		"id":           customerPayment.ID,
 		"status":       0,
 		"message":      "Payment confirmed",
 		"amount":       customerPayment.TransactionAmount,

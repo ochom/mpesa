@@ -4,6 +4,9 @@ seeder:
 dev:
 	@air
 
+build:
+	@go build -o tmp/app cmd/server/main.go
+
 tidy:
 	@echo "Cleaning up..."
 	@go mod tidy

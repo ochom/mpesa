@@ -8,7 +8,7 @@ import (
 )
 
 func HandleTaxRemittance(ctx fiber.Ctx) error {
-	req, err := parseData[domain.TaxRequest](ctx)
+	req, err := parseDataValidate[domain.TaxRequest](ctx)
 	if err != nil {
 		logs.Error("failed to parse data: %v", err)
 		return err
@@ -28,7 +28,7 @@ func HandleTaxTimeout(ctx fiber.Ctx) error {
 // HandleTaxResult ...
 func HandleTaxResult(ctx fiber.Ctx) error {
 	id := ctx.Params("id")
-	req, err := parseData[domain.TaxResult](ctx)
+	req, err := parseDataValidate[domain.TaxResult](ctx)
 	if err != nil {
 		logs.Error("failed to parse data: %v", err)
 		return err

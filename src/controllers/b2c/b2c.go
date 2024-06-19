@@ -14,6 +14,7 @@ import (
 	"github.com/ochom/mpesa/src/utils"
 )
 
+// InitiatePayment initiates an mpesa b2c payment
 func InitiatePayment(req domain.B2cRequest) {
 	payment := models.NewBusinessPayment(req.RequestId, req.PhoneNumber, req.Amount, req.CallbackUrl)
 	if err := sql.Create(payment); err != nil {
@@ -57,7 +58,7 @@ func InitiatePayment(req domain.B2cRequest) {
 		return
 	}
 
-	if res.Status > 201 {
+	if res.Status > 204 {
 		logs.Error("request failed status: %d body: %v", res.Status, string(res.Body))
 		return
 	}
@@ -80,6 +81,7 @@ func InitiatePayment(req domain.B2cRequest) {
 	}
 }
 
+// TimeoutPayment processes b2c payment timeout
 func TimeoutPayment(id string) {
 	payment, err := sql.FindOneById[models.BusinessPayment](id)
 	if err != nil {
@@ -99,6 +101,7 @@ func TimeoutPayment(id string) {
 	}
 }
 
+// ResultPayment processes b2c payment result
 func ResultPayment(id string, req *domain.B2cResult) {
 	payment, err := sql.FindOneById[models.BusinessPayment](id)
 	if err != nil {

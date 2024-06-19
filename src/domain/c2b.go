@@ -16,7 +16,7 @@ type MpesaExpressCallback struct {
 			MerchantRequestID string `json:"MerchantRequestID"`
 			CheckoutRequestID string `json:"CheckoutRequestID"`
 			ResultCode        int    `json:"ResultCode"`
-			ResultDescription string `json:"ResultDescription"`
+			ResultDesc        string `json:"ResultDesc"`
 			CallbackMetadata  struct {
 				Item []struct {
 					Name  string `json:"Name"`

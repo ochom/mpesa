@@ -10,6 +10,12 @@ var validate = validator.New()
 func parseData[T any](ctx fiber.Ctx) (T, error) {
 	var data T
 	err := ctx.Bind().Body(&data)
+	return data, err
+}
+
+func parseDataValidate[T any](ctx fiber.Ctx) (T, error) {
+	var data T
+	err := ctx.Bind().Body(&data)
 	if err != nil {
 		return data, err
 	}

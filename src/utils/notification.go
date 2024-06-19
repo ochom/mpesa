@@ -21,7 +21,7 @@ func NotifyClient(url string, payload any) error {
 		return fmt.Errorf("failed to make request: %v", err)
 	}
 
-	if res.Status > 201 {
+	if res.Status > 204 {
 		return fmt.Errorf("request failed status: %d body: %v", res.Status, string(res.Body))
 	}
 

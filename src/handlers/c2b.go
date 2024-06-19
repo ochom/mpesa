@@ -11,9 +11,20 @@ import (
 	"github.com/ochom/mpesa/src/domain"
 )
 
+// HandleC2BRegisterUrls ...
+func HandleC2BRegisterUrls(ctx fiber.Ctx) error {
+	req, err := parseData[map[string]string](ctx)
+	if err != nil {
+		return err
+	}
+
+	go c2b.RegisterUrls(req)
+	return ctx.JSON(fiber.Map{"message": "success"})
+}
+
 // HandleStkPush ...
 func HandleStkPush(ctx fiber.Ctx) error {
-	req, err := parseData[domain.MpesaExpressRequest](ctx)
+	req, err := parseDataValidate[domain.MpesaExpressRequest](ctx)
 	if err != nil {
 		return err
 	}
@@ -31,7 +42,7 @@ func HandleC2BResult(ctx fiber.Ctx) error {
 		return ctx.JSON(fiber.Map{"message": "failed, refId is required"})
 	}
 
-	req, err := parseData[domain.MpesaExpressCallback](ctx)
+	req, err := parseDataValidate[domain.MpesaExpressCallback](ctx)
 	if err != nil {
 		return err
 	}
@@ -42,7 +53,7 @@ func HandleC2BResult(ctx fiber.Ctx) error {
 
 // HandleRestValidation ...
 func HandleRestValidation(ctx fiber.Ctx) error {
-	req, err := parseData[domain.ValidationRequest](ctx)
+	req, err := parseDataValidate[domain.ValidationRequest](ctx)
 	if err != nil {
 		return err
 	}
@@ -62,7 +73,7 @@ func HandleRestValidation(ctx fiber.Ctx) error {
 
 // HandleRestConfirmation ...
 func HandleRestConfirmation(ctx fiber.Ctx) error {
-	req, err := parseData[domain.ValidationRequest](ctx)
+	req, err := parseDataValidate[domain.ValidationRequest](ctx)
 	if err != nil {
 		return err
 	}
@@ -77,7 +88,7 @@ func HandleRestConfirmation(ctx fiber.Ctx) error {
 // HandleSoapValidation ...
 func HandleSoapValidation(ctx fiber.Ctx) error {
 	// TODO parse the data into SOAP data
-	req, err := parseData[domain.ValidationRequest](ctx)
+	req, err := parseDataValidate[domain.ValidationRequest](ctx)
 	if err != nil {
 		return err
 	}

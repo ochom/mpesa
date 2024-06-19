@@ -19,6 +19,7 @@ func New() *fiber.App {
 
 	// c2b ...
 	c2b := v1.Group("/c2b")
+	c2b.Post("/register-urls", handlers.HandleC2BRegisterUrls)
 	c2b.Post("/initiate", handlers.HandleStkPush)
 	c2b.Post("/result", handlers.HandleC2BResult)
 	c2b.Post("/rest/validate", handlers.HandleRestValidation)

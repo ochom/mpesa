@@ -18,11 +18,45 @@ import (
 	"github.com/ochom/mpesa/src/utils"
 )
 
+// hash hashes the shortcode, passkey and timestamp
 func hash(shortCode, passKey, timeStamp string) string {
 	join := shortCode + passKey + timeStamp
 	return base64.StdEncoding.EncodeToString([]byte(join))
 }
 
+// RegisterUrls registers c2b url
+func RegisterUrls(req map[string]string) {
+	username := config.MpesaC2BConsumerKey
+	password := config.MpesaC2BConsumerSecret
+
+	headers := map[string]string{
+		"Authorization": "Bearer " + auth.Authenticate("mpesa_c2b_token", username, password),
+		"Content-Type":  "application/json",
+	}
+
+	payload := map[string]string{
+		"ShortCode":       config.MpesaC2BShortCode,
+		"ResponseType":    "Completed",
+		"ConfirmationURL": req["confirmation_url"],
+		"ValidationURL":   req["validation_url"],
+	}
+
+	url := fmt.Sprintf("%s/mpesa/c2b/v1/registerurl", config.MpesaApiUrl)
+	res, err := gttp.Post(url, headers, payload)
+	if err != nil {
+		logs.Error("failed to make request: %v", err)
+		return
+	}
+
+	if res.Status > 204 {
+		logs.Error("failed to register url: %v", string(res.Body))
+		return
+	}
+
+	logs.Info("res: %v", string(res.Body))
+}
+
+// InitiatePayment initiates an mpesa c2b stk push
 func InitiatePayment(req *domain.MpesaExpressRequest) {
 	refId := uuid.New()
 	cache.SetWithExpiry(fmt.Sprintf("stk-%s", refId), helpers.ToBytes(req), 5*time.Minute)
@@ -59,7 +93,7 @@ func InitiatePayment(req *domain.MpesaExpressRequest) {
 		return
 	}
 
-	if res.Status > 201 {
+	if res.Status > 204 {
 		logs.Error("request failed status: %d body: %v", res.Status, string(res.Body))
 		return
 	}
@@ -71,6 +105,7 @@ func InitiatePayment(req *domain.MpesaExpressRequest) {
 	}
 }
 
+// ResultPayment processes the payment result for stk push
 func ResultPayment(id string, req *domain.MpesaExpressCallback) {
 	cacheBytes := cache.Get(fmt.Sprintf("stk-%s", id))
 	if cacheBytes == nil {
@@ -78,10 +113,8 @@ func ResultPayment(id string, req *domain.MpesaExpressCallback) {
 		return
 	}
 
-	cacheData := helpers.FromBytes[domain.MpesaExpressRequest](cacheBytes)
-
 	if req.Body.StkCallback.ResultCode != 0 {
-		logs.Error("failed to process payment: %v", req.Body.StkCallback.ResultDescription)
+		logs.Error("failed to process payment: %v", req.Body.StkCallback.ResultDesc)
 		return
 	}
 
@@ -89,6 +122,8 @@ func ResultPayment(id string, req *domain.MpesaExpressCallback) {
 	for _, item := range req.Body.StkCallback.CallbackMetadata.Item {
 		meta[item.Name] = item.Value
 	}
+
+	cacheData := helpers.FromBytes[domain.MpesaExpressRequest](cacheBytes)
 
 	txId := meta["MpesaReceiptNumber"].(string)
 	txTime := time.Now().Format("20060102150405")
@@ -105,7 +140,7 @@ func ResultPayment(id string, req *domain.MpesaExpressCallback) {
 	payload := map[string]any{
 		"id":           customerPayment.ID,
 		"status":       req.Body.StkCallback.ResultCode,
-		"message":      req.Body.StkCallback.ResultDescription,
+		"message":      req.Body.StkCallback.ResultDesc,
 		"amount":       customerPayment.TransactionAmount,
 		"phone_number": customerPayment.PhoneNumber,
 		"reference":    customerPayment.TransactionID,
@@ -133,7 +168,7 @@ func ValidatePayment(req *domain.ValidationRequest) bool {
 		return false
 	}
 
-	if res.Status > 201 {
+	if res.Status > 204 {
 		logs.Error("request failed status: %d body: %v", res.Status, string(res.Body))
 		return false
 	}

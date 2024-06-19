@@ -3,7 +3,7 @@
 ##
 ## Build
 ##
-FROM golang:1.22-alpine AS builder
+FROM golang:1.22-alpine AS build
 
 RUN apk add build-base
 
@@ -16,20 +16,20 @@ RUN go mod download
 
 COPY . ./
 
-RUN CGO_ENABLED=1 go build -o ./tmp/server cmd/server/main.go
+ENV CGO_ENABLED=1 
+
+RUN go build -o /server .
 
 ##
 ## Deploy
 ##
 FROM busybox:1.35.0-uclibc AS deploy 
 
-WORKDIR /
-
-COPY --from=builder /app/tmp/server /server
+COPY --from=build /server /bin/app
 
 RUN mkdir -p /data
 RUN mkdir -p /data/certs
 
 EXPOSE 8080
 
-ENTRYPOINT [ "./server" ]
+CMD [ "/bin/app" ]

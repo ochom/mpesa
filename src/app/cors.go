@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
+	"github.com/ochom/gutils/logs"
 	"github.com/ochom/mpesa/src/app/config"
 )
 
@@ -30,6 +31,7 @@ func safOrigins(next fiber.Handler) fiber.Handler {
 			return next(c)
 		}
 
+		logs.Warn("received request from unknown origin: %s", origin)
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
 			"message": "forbidden",
 		})

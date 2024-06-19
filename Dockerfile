@@ -23,10 +23,11 @@ RUN go build -o /server .
 ##
 ## Deploy
 ##
-FROM busybox:1.35.0-uclibc AS deploy 
+FROM alpine:3.20.0 AS deploy
 
 COPY --from=build /server /bin/app
 
+RUN chmod +x /bin/app
 RUN mkdir -p /data
 RUN mkdir -p /data/certs
 

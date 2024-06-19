@@ -29,7 +29,7 @@ func InitiatePayment(req *domain.MpesaExpressRequest) {
 
 	timestamp := time.Now().Format("20060102150405")
 	phoneNumber := helpers.ParseMobile(req.PhoneNumber)
-	callbackUrl := fmt.Sprintf("%s/c2b/result?refId=%s", config.BaseUrl, refId)
+	callbackUrl := fmt.Sprintf("%s/v1/c2b/result?refId=%s", config.BaseUrl, refId)
 
 	payload := map[string]string{
 		"BusinessShortCode": config.MpesaC2BShortCode,

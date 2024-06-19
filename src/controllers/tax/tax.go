@@ -32,8 +32,8 @@ func InitiatePayment(req *domain.TaxRequest) {
 	certPath := config.MpesaTaxCertificatePath
 	initiatorPassword := config.MpesaTaxInitiatorPassword
 
-	resultUrl := fmt.Sprintf("%s/tax/result?id=%s", config.BaseUrl, payment.Id)
-	timeoutUrl := fmt.Sprintf("%s/tax/timeout?id=%s", config.BaseUrl, payment.Id)
+	resultUrl := fmt.Sprintf("%s/v1/tax/result?id=%s", config.BaseUrl, payment.Id)
+	timeoutUrl := fmt.Sprintf("%s/v1/tax/timeout?id=%s", config.BaseUrl, payment.Id)
 	payload := map[string]string{
 		"Initiator":              "TaxPayer",
 		"SecurityCredential":     auth.GetSecurityCredentials("mpesa_tax_security", certPath, initiatorPassword),

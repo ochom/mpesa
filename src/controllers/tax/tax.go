@@ -57,7 +57,7 @@ func InitiatePayment(req *domain.TaxRequest) {
 		return
 	}
 
-	if res.Status > 201 {
+	if res.Status > 204 {
 		logs.Error("request failed status: %d body: %v", res.Status, string(res.Body))
 		return
 	}

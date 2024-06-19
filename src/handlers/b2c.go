@@ -8,7 +8,7 @@ import (
 
 // HandleInitiatePayment ...
 func HandleInitiatePayment(ctx fiber.Ctx) error {
-	req, err := parseData[domain.B2cRequest](ctx)
+	req, err := parseDataValidate[domain.B2cRequest](ctx)
 	if err != nil {
 		return err
 	}
@@ -24,7 +24,7 @@ func HandleB2CResult(ctx fiber.Ctx) error {
 		return ctx.JSON(fiber.Map{"message": "failed"})
 	}
 
-	req, err := parseData[domain.B2cResult](ctx)
+	req, err := parseDataValidate[domain.B2cResult](ctx)
 	if err != nil {
 		return err
 	}

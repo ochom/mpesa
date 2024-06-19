@@ -24,6 +24,38 @@ func hash(shortCode, passKey, timeStamp string) string {
 	return base64.StdEncoding.EncodeToString([]byte(join))
 }
 
+// RegisterUrls registers c2b url
+func RegisterUrls(req map[string]string) {
+	username := config.MpesaC2BConsumerKey
+	password := config.MpesaC2BConsumerSecret
+
+	headers := map[string]string{
+		"Authorization": "Bearer " + auth.Authenticate("mpesa_c2b_token", username, password),
+		"Content-Type":  "application/json",
+	}
+
+	payload := map[string]string{
+		"ShortCode":       config.MpesaC2BShortCode,
+		"ResponseType":    "Completed",
+		"ConfirmationURL": req["confirmation_url"],
+		"ValidationURL":   req["validation_url"],
+	}
+
+	url := fmt.Sprintf("%s/mpesa/c2b/v1/registerurl", config.MpesaApiUrl)
+	res, err := gttp.Post(url, headers, payload)
+	if err != nil {
+		logs.Error("failed to make request: %v", err)
+		return
+	}
+
+	if res.Status > 204 {
+		logs.Error("failed to register url: %v", string(res.Body))
+		return
+	}
+
+	logs.Info("res: %v", string(res.Body))
+}
+
 // InitiatePayment initiates an mpesa c2b stk push
 func InitiatePayment(req *domain.MpesaExpressRequest) {
 	refId := uuid.New()
@@ -61,7 +93,7 @@ func InitiatePayment(req *domain.MpesaExpressRequest) {
 		return
 	}
 
-	if res.Status > 201 {
+	if res.Status > 204 {
 		logs.Error("request failed status: %d body: %v", res.Status, string(res.Body))
 		return
 	}
@@ -136,7 +168,7 @@ func ValidatePayment(req *domain.ValidationRequest) bool {
 		return false
 	}
 
-	if res.Status > 201 {
+	if res.Status > 204 {
 		logs.Error("request failed status: %d body: %v", res.Status, string(res.Body))
 		return false
 	}

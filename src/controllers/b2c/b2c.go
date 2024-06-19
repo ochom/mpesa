@@ -33,11 +33,11 @@ func InitiatePayment(req domain.B2cRequest) {
 	initiatorPassword := config.MpesaB2CInitiatorPassword
 	securityCredential := auth.GetSecurityCredentials("mpesa_b2c_security", certPath, initiatorPassword)
 
-	resultUrl := fmt.Sprintf("%s/b2c/result?id=%s", config.BaseUrl, payment.Id)
-	timeoutUrl := fmt.Sprintf("%s/b2c/timeout?id=%s", config.BaseUrl, payment.Id)
+	resultUrl := fmt.Sprintf("%s/v1/b2c/result?id=%s", config.BaseUrl, payment.Uuid)
+	timeoutUrl := fmt.Sprintf("%s/v1/b2c/timeout?id=%s", config.BaseUrl, payment.Uuid)
 
 	payload := map[string]string{
-		"OriginatorConversationID": payment.Id,
+		"OriginatorConversationID": payment.Uuid,
 		"InitiatorName":            config.MpesaB2CInitiatorName,
 		"SecurityCredential":       securityCredential,
 		"CommandID":                "BusinessPayment",
@@ -88,7 +88,7 @@ func TimeoutPayment(id string) {
 	}
 
 	payload := map[string]any{
-		"id":         payment.Id,
+		"id":         payment.ID,
 		"status":     2,
 		"request_id": payment.RequestId,
 		"amount":     payment.Amount,
@@ -130,7 +130,7 @@ func ResultPayment(id string, req *domain.B2cResult) {
 	}
 
 	payload := map[string]any{
-		"id":         payment.Id,
+		"id":         payment.ID,
 		"status":     req.Result.ResultCode,
 		"message":    req.Result.ResultDesc,
 		"request_id": payment.RequestId,

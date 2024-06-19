@@ -18,15 +18,15 @@ func HandleTaxRemittance(ctx fiber.Ctx) error {
 	return nil
 }
 
-// HandleTimeout ...
-func HandleTimeout(ctx fiber.Ctx) error {
+// HandleTaxTimeout ...
+func HandleTaxTimeout(ctx fiber.Ctx) error {
 	id := ctx.Params("id")
 	go tax.TimeoutPayment(id)
 	return nil
 }
 
-// HandleResult ...
-func HandleResult(ctx fiber.Ctx) error {
+// HandleTaxResult ...
+func HandleTaxResult(ctx fiber.Ctx) error {
 	id := ctx.Params("id")
 	req, err := parseData[domain.TaxResult](ctx)
 	if err != nil {

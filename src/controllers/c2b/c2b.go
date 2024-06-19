@@ -29,7 +29,7 @@ func InitiatePayment(req *domain.MpesaExpressRequest) {
 
 	timestamp := time.Now().Format("20060102150405")
 	phoneNumber := helpers.ParseMobile(req.PhoneNumber)
-	callbackUrl := fmt.Sprintf("%s/c2b/result?refId=%s", config.BaseUrl, refId)
+	callbackUrl := fmt.Sprintf("%s/v1/c2b/result?refId=%s", config.BaseUrl, refId)
 
 	payload := map[string]string{
 		"BusinessShortCode": config.MpesaC2BShortCode,
@@ -103,7 +103,7 @@ func ResultPayment(id string, req *domain.MpesaExpressCallback) {
 	}
 
 	payload := map[string]any{
-		"id":           customerPayment.Id,
+		"id":           customerPayment.ID,
 		"status":       req.Body.StkCallback.ResultCode,
 		"message":      req.Body.StkCallback.ResultDescription,
 		"amount":       customerPayment.TransactionAmount,
@@ -150,7 +150,7 @@ func ConfirmPayment(req *domain.ValidationRequest) {
 	}
 
 	payload := map[string]any{
-		"id":           customerPayment.Id,
+		"id":           customerPayment.ID,
 		"status":       0,
 		"message":      "Payment confirmed",
 		"amount":       customerPayment.TransactionAmount,

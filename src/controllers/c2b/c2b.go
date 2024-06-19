@@ -28,7 +28,6 @@ func hash(shortCode, passKey, timeStamp string) string {
 func RegisterUrls(req map[string]string) {
 	username := config.MpesaC2BConsumerKey
 	password := config.MpesaC2BConsumerSecret
-
 	headers := map[string]string{
 		"Authorization": "Bearer " + auth.Authenticate("mpesa_c2b_token", username, password),
 		"Content-Type":  "application/json",

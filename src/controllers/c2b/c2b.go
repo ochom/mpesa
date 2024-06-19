@@ -78,10 +78,8 @@ func ResultPayment(id string, req *domain.MpesaExpressCallback) {
 		return
 	}
 
-	cacheData := helpers.FromBytes[domain.MpesaExpressRequest](cacheBytes)
-
 	if req.Body.StkCallback.ResultCode != 0 {
-		logs.Error("failed to process payment: %v", req.Body.StkCallback.ResultDescription)
+		logs.Error("failed to process payment: %v", req.Body.StkCallback.ResultDesc)
 		return
 	}
 
@@ -89,6 +87,8 @@ func ResultPayment(id string, req *domain.MpesaExpressCallback) {
 	for _, item := range req.Body.StkCallback.CallbackMetadata.Item {
 		meta[item.Name] = item.Value
 	}
+
+	cacheData := helpers.FromBytes[domain.MpesaExpressRequest](cacheBytes)
 
 	txId := meta["MpesaReceiptNumber"].(string)
 	txTime := time.Now().Format("20060102150405")
@@ -105,7 +105,7 @@ func ResultPayment(id string, req *domain.MpesaExpressCallback) {
 	payload := map[string]any{
 		"id":           customerPayment.ID,
 		"status":       req.Body.StkCallback.ResultCode,
-		"message":      req.Body.StkCallback.ResultDescription,
+		"message":      req.Body.StkCallback.ResultDesc,
 		"amount":       customerPayment.TransactionAmount,
 		"phone_number": customerPayment.PhoneNumber,
 		"reference":    customerPayment.TransactionID,

@@ -3,7 +3,9 @@
 ##
 ## Build
 ##
-FROM golang:1.22-alpine  AS build
+FROM golang:1.22-alpine AS builder
+
+RUN apk add build-base
 
 WORKDIR /app
 
@@ -14,10 +16,7 @@ RUN go mod download
 
 COPY . ./
 
-RUN apk add --no-cache gcc g++ git openssh-client
-RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /server cmd/server/main.go
-
-
+RUN CGO_ENABLED=1 go build -o ./tmp/server cmd/server/main.go
 
 ##
 ## Deploy
@@ -26,11 +25,11 @@ FROM busybox:1.35.0-uclibc AS deploy
 
 WORKDIR /
 
-COPY --from=build /server .
+COPY --from=builder /app/tmp/server /server
 
 RUN mkdir -p /data
 RUN mkdir -p /data/certs
 
 EXPOSE 8080
 
-CMD ["/server"]
+ENTRYPOINT [ "./server" ]

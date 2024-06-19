@@ -2,6 +2,8 @@ module github.com/ochom/mpesa
 
 go 1.22.1
 
+replace github.com/mattn/go-sqlite3 => github.com/leso-kn/go-sqlite3 v0.0.0-20230710125852-03158dc838ed
+
 require (
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/gofiber/fiber/v3 v3.0.0-beta.2

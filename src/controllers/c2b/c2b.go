@@ -2,7 +2,6 @@ package c2b
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/ochom/gutils/cache"
@@ -38,20 +37,14 @@ func RegisterUrls(req map[string]string) {
 		"Content-Type":  "application/json",
 	}
 
-	shortCode, err := strconv.Atoi(account.ShortCode)
-	if err != nil {
-		logs.Error("failed to convert short code: %v", err)
-		return
-	}
-
 	payload := map[string]any{
-		"ShortCode":       shortCode,
+		"ShortCode":       account.ShortCode,
 		"ResponseType":    "Completed",
 		"ConfirmationURL": req["confirmation_url"],
 		"ValidationURL":   req["validation_url"],
 	}
 
-	url := fmt.Sprintf("%s/mpesa/c2b/v1/registerurl", config.MpesaApiUrl)
+	url := fmt.Sprintf("%s/mpesa/c2b/v2/registerurl", config.MpesaApiUrl)
 	res, err := gttp.Post(url, headers, payload)
 	if err != nil {
 		logs.Error("failed to make request: %v", err)

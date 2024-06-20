@@ -20,12 +20,12 @@ type Account struct {
 	Type              AccountType `json:"type"`
 	PassKey           string      `json:"pass_key"`
 	ConsumerKey       string      `json:"consumer_key"`
-	ConsumerSecrete   string      `json:"consumer_secrete"`
+	ConsumerSecrete   string      `json:"-"`
 	ValidationUrl     string      `json:"validation_url"`
 	ConfirmationUrl   string      `json:"confirmation_url"`
 	InitiatorName     string      `json:"initiator_name"`
-	InitiatorPassword string      `json:"initiator_password"`
-	Certificate       string      `json:"certificate"`
+	InitiatorPassword string      `json:"-"`
+	Certificate       string      `json:"-"`
 }
 
 // NewAccount ...

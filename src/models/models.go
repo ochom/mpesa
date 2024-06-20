@@ -6,5 +6,6 @@ func GetSchema() []any {
 		&BusinessPayment{},
 		&CustomerPayment{},
 		&TaxPayment{},
+		&Account{},
 	}
 }

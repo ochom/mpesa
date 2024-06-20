@@ -2,14 +2,13 @@ package models
 
 import (
 	"github.com/ochom/gutils/helpers"
-	"github.com/ochom/gutils/uuid"
 	"gorm.io/gorm"
 )
 
 // BusinessPayment store data when a business makes payment to Customer
 type BusinessPayment struct {
 	gorm.Model
-	Uuid                     string   `json:"uuid"`
+	AccountID                uint     `json:"account_id"`
 	Amount                   string   `json:"amount"`
 	PhoneNumber              string   `json:"phone_number"`
 	RequestId                string   `json:"request_id"`
@@ -25,9 +24,9 @@ type BusinessPayment struct {
 }
 
 // NewBusinessPayment create a new BusinessPayment
-func NewBusinessPayment(requestId, phone, amount, cbUrl string) *BusinessPayment {
+func NewBusinessPayment(shortCodeID uint, requestId, phone, amount, cbUrl string) *BusinessPayment {
 	return &BusinessPayment{
-		Uuid:        uuid.New(),
+		AccountID:   shortCodeID,
 		RequestId:   requestId,
 		Amount:      amount,
 		PhoneNumber: helpers.ParseMobile(phone),

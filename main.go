@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"time"
 
+	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/logs"
 	"github.com/ochom/gutils/sql"
 	"github.com/ochom/mpesa/src/app"
@@ -33,7 +35,8 @@ func init() {
 func main() {
 	srv := app.New()
 	go func() {
-		if err := srv.Listen(":8080"); err != nil {
+		port := helpers.GetPort(8080)
+		if err := srv.Listen(fmt.Sprintf(":%d", port)); err != nil {
 			logs.Fatal("failed to start server: %v", err)
 		}
 	}()

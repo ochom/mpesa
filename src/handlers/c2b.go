@@ -11,17 +11,6 @@ import (
 	"github.com/ochom/mpesa/src/domain"
 )
 
-// HandleC2BRegisterUrls ...
-func HandleC2BRegisterUrls(ctx fiber.Ctx) error {
-	req, err := parseData[map[string]string](ctx)
-	if err != nil {
-		return err
-	}
-
-	go c2b.RegisterUrls(req)
-	return ctx.JSON(fiber.Map{"message": "success"})
-}
-
 // HandleStkPush ...
 func HandleStkPush(ctx fiber.Ctx) error {
 	req, err := parseDataValidate[domain.MpesaExpressRequest](ctx)

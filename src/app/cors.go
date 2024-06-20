@@ -5,9 +5,23 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/basicauth"
 	"github.com/ochom/gutils/logs"
 	"github.com/ochom/mpesa/src/app/config"
 )
+
+func basicAuth() fiber.Handler {
+	return basicauth.New(basicauth.Config{
+		Users: map[string]string{
+			config.BasicAuthUsername: config.BasicAuthPassword,
+		},
+		Unauthorized: func(c fiber.Ctx) error {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"message": "Unauthorized",
+			})
+		},
+	})
+}
 
 func safOrigins(next fiber.Handler) fiber.Handler {
 	allowedOrigins := []string{

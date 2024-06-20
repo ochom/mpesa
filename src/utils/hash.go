@@ -6,31 +6,21 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
-	"io"
-	"os"
 
 	"github.com/ochom/gutils/logs"
 )
 
-func HashText(certPath, text string) string {
-	certFile, err := os.OpenFile(certPath, os.O_RDONLY, 0)
-	if err != nil {
-		logs.Error("reading certificate file: %v", err)
-		return ""
-	}
+func Encode(b []byte) string {
+	return base64.StdEncoding.EncodeToString(b)
+}
 
-	defer certFile.Close()
-
-	certContent, err := io.ReadAll(certFile)
-	if err != nil {
-		logs.Error("reading certificate content: %v", err)
-		return ""
-	}
+func HashText(certText, text string) string {
+	certContent := []byte(certText)
 
 	// Decode PEM block
 	block, _ := pem.Decode(certContent)
 	if block == nil {
-		logs.Error("parsing certificate: %v", err)
+		logs.Error("decoding certificate pem")
 		return ""
 	}
 
@@ -49,5 +39,5 @@ func HashText(certPath, text string) string {
 		return ""
 	}
 
-	return base64.StdEncoding.EncodeToString(cipher)
+	return Encode(cipher)
 }

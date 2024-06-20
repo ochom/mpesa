@@ -21,10 +21,10 @@ func New() *fiber.App {
 	sc.Get("/", handlers.HandleListShortCodes)
 	sc.Post("/", handlers.HandleCreateShortCode)
 	sc.Put("/:id", handlers.HandleUpdateShortCode)
+	sc.Post("/register-urls", handlers.HandleC2BRegisterUrls)
 
 	// c2b ...
 	c2b := v1.Group("/c2b")
-	c2b.Post("/register-urls", basicAuth(), handlers.HandleC2BRegisterUrls)
 	c2b.Post("/initiate", handlers.HandleStkPush)
 	c2b.Post("/result", safOrigins(handlers.HandleC2BResult))
 	c2b.Post("/rest/validate", safOrigins(handlers.HandleRestValidation))

@@ -20,7 +20,14 @@ func HandleTaxRemittance(ctx fiber.Ctx) error {
 
 // HandleTaxTimeout ...
 func HandleTaxTimeout(ctx fiber.Ctx) error {
+	logs.Info("tax timeout => %s", string(ctx.Body()))
+
 	id := ctx.Params("id")
+	if id == "" {
+		logs.Error("tax timeout => id is required")
+		return ctx.JSON(fiber.Map{"message": "failed"})
+	}
+
 	go tax.TimeoutPayment(id)
 	return nil
 }
@@ -28,9 +35,14 @@ func HandleTaxTimeout(ctx fiber.Ctx) error {
 // HandleTaxResult ...
 func HandleTaxResult(ctx fiber.Ctx) error {
 	id := ctx.Params("id")
+	if id == "" {
+		logs.Error("tax result => id is required")
+		return ctx.JSON(fiber.Map{"message": "failed"})
+	}
+
 	req, err := parseDataValidate[domain.TaxResult](ctx)
 	if err != nil {
-		logs.Error("failed to parse data: %v", err)
+		logs.Error("tax result parse error: => %s", err)
 		return err
 	}
 

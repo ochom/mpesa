@@ -61,7 +61,6 @@ func b2cOrigins() fiber.Handler {
 
 		return strings.Contains(allowedOrigins, origin)
 	}
-
 	return cors.New(crs)
 }
 

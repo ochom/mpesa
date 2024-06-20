@@ -11,6 +11,12 @@ import (
 	"github.com/ochom/mpesa/src/app/config"
 )
 
+func getCors() cors.Config {
+	crs := cors.ConfigDefault
+	crs.AllowOrigins = ""
+	return crs
+}
+
 func basicAuth() fiber.Handler {
 	return basicauth.New(basicauth.Config{
 		Users: map[string]string{
@@ -40,7 +46,7 @@ func safOrigins() fiber.Handler {
 		"196.201.212.69",
 	}
 
-	crs := cors.ConfigDefault
+	crs := getCors()
 	crs.AllowOriginsFunc = func(origin string) bool {
 		logs.Info("Receive request from origin: %s", origin)
 		return slices.Contains(allowedOrigins, origin)
@@ -52,7 +58,7 @@ func safOrigins() fiber.Handler {
 func b2cOrigins() fiber.Handler {
 	allowedOrigins := config.B2CAllowedOrigins
 
-	crs := cors.ConfigDefault
+	crs := getCors()
 	crs.AllowOriginsFunc = func(origin string) bool {
 		logs.Info("Receive request from origin: %s", origin)
 		if allowedOrigins == "" || allowedOrigins == "*" {
@@ -67,7 +73,7 @@ func b2cOrigins() fiber.Handler {
 func taxOrigins() fiber.Handler {
 	allowedOrigins := config.TaxAllowedOrigins
 
-	crs := cors.ConfigDefault
+	crs := getCors()
 	crs.AllowOriginsFunc = func(origin string) bool {
 		logs.Info("Receive request from origin: %s", origin)
 		if allowedOrigins == "" || allowedOrigins == "*" {

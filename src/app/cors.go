@@ -24,8 +24,6 @@ func basicAuth() fiber.Handler {
 	})
 }
 
-var crs = cors.ConfigDefault
-
 func safOrigins() fiber.Handler {
 	allowedOrigins := []string{
 		"196.201.214.200",
@@ -42,6 +40,7 @@ func safOrigins() fiber.Handler {
 		"196.201.212.69",
 	}
 
+	crs := cors.ConfigDefault
 	crs.AllowOriginsFunc = func(origin string) bool {
 		logs.Info("Receive request from origin: %s", origin)
 		return slices.Contains(allowedOrigins, origin)
@@ -53,6 +52,7 @@ func safOrigins() fiber.Handler {
 func b2cOrigins() fiber.Handler {
 	allowedOrigins := config.B2CAllowedOrigins
 
+	crs := cors.ConfigDefault
 	crs.AllowOriginsFunc = func(origin string) bool {
 		logs.Info("Receive request from origin: %s", origin)
 		if allowedOrigins == "" || allowedOrigins == "*" {
@@ -66,6 +66,8 @@ func b2cOrigins() fiber.Handler {
 
 func taxOrigins() fiber.Handler {
 	allowedOrigins := config.TaxAllowedOrigins
+
+	crs := cors.ConfigDefault
 	crs.AllowOriginsFunc = func(origin string) bool {
 		logs.Info("Receive request from origin: %s", origin)
 		if allowedOrigins == "" || allowedOrigins == "*" {

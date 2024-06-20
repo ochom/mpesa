@@ -136,6 +136,15 @@ func HandleUpdateAccount(ctx fiber.Ctx) error {
 	return ctx.JSON(fiber.Map{"message": "success"})
 }
 
+// HandleDeleteAccount ...
+func HandleDeleteAccount(ctx fiber.Ctx) error {
+	if err := sql.DeleteById[models.Account](ctx.Params("id")); err != nil {
+		return err
+	}
+
+	return ctx.JSON(fiber.Map{"message": "success"})
+}
+
 // HandleC2BRegisterUrls ...
 func HandleC2BRegisterUrls(ctx fiber.Ctx) error {
 	req, err := parseData[map[string]string](ctx)

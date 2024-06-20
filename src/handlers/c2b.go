@@ -7,6 +7,7 @@ import (
 	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/logs"
 	"github.com/ochom/gutils/uuid"
+	"github.com/ochom/mpesa/src/app/config"
 	"github.com/ochom/mpesa/src/controllers/c2b"
 	"github.com/ochom/mpesa/src/domain"
 )
@@ -26,13 +27,17 @@ func HandleStkPush(ctx fiber.Ctx) error {
 
 // HandleResult ...
 func HandleC2BResult(ctx fiber.Ctx) error {
+	logs.Info("c2b result => %s", string(ctx.Body()))
+
 	id := ctx.Query("refId")
 	if id == "" {
+		logs.Error("c2b result => refId is required")
 		return ctx.JSON(fiber.Map{"message": "failed, refId is required"})
 	}
 
 	req, err := parseDataValidate[domain.MpesaExpressCallback](ctx)
 	if err != nil {
+		logs.Error("c2b result parse error: => %s", err)
 		return err
 	}
 
@@ -42,28 +47,32 @@ func HandleC2BResult(ctx fiber.Ctx) error {
 
 // HandleRestValidation ...
 func HandleRestValidation(ctx fiber.Ctx) error {
+	logs.Info("c2b rest validation => %s", string(ctx.Body()))
+
 	req, err := parseDataValidate[domain.ValidationRequest](ctx)
 	if err != nil {
+		logs.Error("c2b rest validation parse error: => %s", err)
 		return err
 	}
 
-	if ok := c2b.ValidatePayment(&req); ok {
-		return ctx.JSON(fiber.Map{
-			"ResultCode": "0",
-			"ResultDesc": "Accepted",
-		})
+	code, desc := "0", "Accepted"
+	if ok := c2b.ValidatePayment(&req); !ok {
+		code, desc = "C2B00016", "Rejected"
 	}
 
 	return ctx.JSON(fiber.Map{
-		"ResultCode": "C2B00016",
-		"ResultDesc": "Rejected",
+		"ResultCode": code,
+		"ResultDesc": desc,
 	})
 }
 
 // HandleRestConfirmation ...
 func HandleRestConfirmation(ctx fiber.Ctx) error {
+	logs.Info("c2b rest confirmation => %s", string(ctx.Body()))
+
 	req, err := parseDataValidate[domain.ValidationRequest](ctx)
 	if err != nil {
+		logs.Error("c2b rest confirmation parse error: => %s", err)
 		return err
 	}
 
@@ -76,44 +85,23 @@ func HandleRestConfirmation(ctx fiber.Ctx) error {
 
 // HandleSoapValidation ...
 func HandleSoapValidation(ctx fiber.Ctx) error {
-	// TODO parse the data into SOAP data
-	req, err := parseDataValidate[domain.ValidationRequest](ctx)
-	if err != nil {
-		return err
-	}
-
-	template := `<?xml version="1.0" encoding="UTF-8"?>
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-    xmlns:c2b="http://cps.huawei.com/cpsinterface/c2bpayment">
-    <soapenv:Header/>
-    <soapenv:Body>
-        <c2b:C2BPaymentValidationResult>
-            <ResultCode>{RESULT_CODE}</ResultCode>
-            <ResultDesc>{RESULT_DESCRIPTION}</ResultDesc>
-            <ThirdPartyTransactionID>{THIRD_PARTY_TRANSACTION_ID}</ThirdPartyTransactionID>
-        </c2b:C2BPaymentValidationResult>
-    </soapenv:Body>
-</soapenv:Envelope>`
+	logs.Info("c2b soap validation => %s", string(ctx.Body()))
 
 	txId := uuid.New()
-	if ok := c2b.ValidatePayment(&req); ok {
-		template = strings.Replace(template, "{RESULT_CODE}", "0", 1)
-		template = strings.Replace(template, "{RESULT_DESCRIPTION}", "Accepted", 1)
-		template = strings.Replace(template, "{THIRD_PARTY_TRANSACTION_ID}", txId, 1)
-	} else {
-		template = strings.Replace(template, "{RESULT_CODE}", "C2B00016", 1)
-		template = strings.Replace(template, "{RESULT_DESCRIPTION}", "Rejected", 1)
-		template = strings.Replace(template, "{THIRD_PARTY_TRANSACTION_ID}", txId, 1)
-	}
+	template := strings.Replace(config.SoapValidationTemplate, "{RESULT_CODE}", "0", 1)
+	template = strings.Replace(template, "{RESULT_DESCRIPTION}", "Accepted", 1)
+	template = strings.Replace(template, "{THIRD_PARTY_TRANSACTION_ID}", txId, 1)
 
 	return ctx.SendString(template)
 }
 
 // HandleSoapConfirmation ...
 func HandleSoapConfirmation(ctx fiber.Ctx) error {
+	logs.Info("c2b soap confirmation => %s", string(ctx.Body()))
+
 	var req domain.SoapPaymentConfirmationRequest
 	if err := ctx.Bind().XML(&req); err != nil {
-		logs.Error("Error decoding XML: %v", err)
+		logs.Error("c2b soap confirmation parse error: => %s", err)
 		return err
 	}
 
@@ -129,17 +117,6 @@ func HandleSoapConfirmation(ctx fiber.Ctx) error {
 	}
 
 	go c2b.ConfirmPayment(&validationRequest)
-
-	template := `<?xml version="1.0" encoding="UTF-8"?>
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-    xmlns:c2b="http://cps.huawei.com/cpsinterface/c2bpayment">
-    <soapenv:Header/>
-    <soapenv:Body>
-        <c2b:C2BPaymentConfirmationResult>C2B Payment result received | Transaction ID: {TRANSACTION_ID}</c2b:C2BPaymentConfirmationResult>
-    </soapenv:Body>
-</soapenv:Envelope>`
-
-	template = strings.Replace(template, "{TRANSACTION_ID}", validationRequest.TransID, 1)
-
+	template := strings.Replace(config.SoapConfirmationTemplate, "{TRANSACTION_ID}", validationRequest.TransID, 1)
 	return ctx.SendString(template)
 }

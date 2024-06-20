@@ -37,17 +37,14 @@ func RegisterUrls(req map[string]string) {
 		"Content-Type":  "application/json",
 	}
 
-	payload := map[string]string{
+	payload := map[string]any{
 		"ShortCode":       account.ShortCode,
 		"ResponseType":    "Completed",
 		"ConfirmationURL": req["confirmation_url"],
 		"ValidationURL":   req["validation_url"],
 	}
 
-	logs.Info("headers: %s", string(helpers.ToBytes(headers)))
-	logs.Info("payload: %s", string(helpers.ToBytes(payload)))
-
-	url := fmt.Sprintf("%s/mpesa/c2b/v1/registerurl", config.MpesaApiUrl)
+	url := fmt.Sprintf("%s/mpesa/c2b/v2/registerurl", config.MpesaApiUrl)
 	res, err := gttp.Post(url, headers, payload)
 	if err != nil {
 		logs.Error("failed to make request: %v", err)

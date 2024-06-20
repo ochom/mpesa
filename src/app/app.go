@@ -18,9 +18,10 @@ func New() *fiber.App {
 	v1 := app.Group("/v1")
 	sc := v1.Group("/accounts")
 	sc.Use(basicAuth())
-	sc.Get("/", handlers.HandleListShortCodes)
-	sc.Post("/", handlers.HandleCreateShortCode)
-	sc.Put("/:id", handlers.HandleUpdateShortCode)
+	sc.Get("/", handlers.HandleListAccounts)
+	sc.Get("/search", handlers.HandleSearchAccounts)
+	sc.Post("/", handlers.HandleCreateAccount)
+	sc.Put("/:id", handlers.HandleUpdateAccount)
 	sc.Post("/register-urls", handlers.HandleC2BRegisterUrls)
 
 	// c2b ...

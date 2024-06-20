@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/gofiber/fiber/v3"
+	"github.com/ochom/gutils/arrays"
 	"github.com/ochom/gutils/sql"
 	"github.com/ochom/mpesa/src/controllers/c2b"
 	"github.com/ochom/mpesa/src/domain"
@@ -10,21 +11,47 @@ import (
 )
 
 // HandleGetShortcodes ...
-func HandleListShortCodes(ctx fiber.Ctx) error {
+func HandleListAccounts(ctx fiber.Ctx) error {
 	accounts := sql.FindAll[models.Account]()
-	// mapped := arrays.Map(accounts, func(account *models.Account) map[string]any {
-	// 	return map[string]any{
-	// 		"id":         account.ID,
-	// 		"short_code": account.ShortCode,
-	// 		"type":       account.Type,
-	// 	}
-	// })
+	mapped := arrays.Map(accounts, func(account *models.Account) map[string]any {
+		return map[string]any{
+			"id":           account.ID,
+			"short_code":   account.ShortCode,
+			"type":         account.Type,
+			"created_at":   account.CreatedAt,
+			"updated_at":   account.UpdatedAt,
+			"consumer_key": account.ConsumerKey,
+			"pass_key":     account.PassKey,
+		}
+	})
 
-	return ctx.JSON(accounts)
+	return ctx.JSON(mapped)
 }
 
-// HandleCreateShortCode ...
-func HandleCreateShortCode(ctx fiber.Ctx) error {
+// HandleSearchAccounts ...
+func HandleSearchAccounts(ctx fiber.Ctx) error {
+	id, shortCode, _type := ctx.Query("id"), ctx.Query("short_code"), ctx.Query("type")
+	accounts := sql.FindAll[models.Account](func(d *gorm.DB) *gorm.DB {
+		return d.Where("id = ? OR short_code = ? OR type = ?", id, shortCode, _type)
+	})
+
+	mapped := arrays.Map(accounts, func(account *models.Account) map[string]any {
+		return map[string]any{
+			"id":           account.ID,
+			"short_code":   account.ShortCode,
+			"type":         account.Type,
+			"created_at":   account.CreatedAt,
+			"updated_at":   account.UpdatedAt,
+			"consumer_key": account.ConsumerKey,
+			"pass_key":     account.PassKey,
+		}
+	})
+
+	return ctx.JSON(mapped)
+}
+
+// HandleCreateAccount ...
+func HandleCreateAccount(ctx fiber.Ctx) error {
 	req, err := parseDataValidate[domain.CreateAccountRequest](ctx)
 	if err != nil {
 		return err
@@ -52,8 +79,8 @@ func HandleCreateShortCode(ctx fiber.Ctx) error {
 	return ctx.JSON(fiber.Map{"message": "success"})
 }
 
-// HandleUpdateShortCode ...
-func HandleUpdateShortCode(ctx fiber.Ctx) error {
+// HandleUpdateAccount ...
+func HandleUpdateAccount(ctx fiber.Ctx) error {
 	account, err := sql.FindOneById[models.Account](ctx.Params("id"))
 	if err != nil {
 		return err

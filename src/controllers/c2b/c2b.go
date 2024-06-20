@@ -40,8 +40,8 @@ func RegisterUrls(req map[string]string) {
 		"ValidationURL":   req["validation_url"],
 	}
 
-	logs.Info("headers: %+v", headers)
-	logs.Info("payload: %+v", payload)
+	logs.Info("headers: %s", string(helpers.ToBytes(headers)))
+	logs.Info("payload: %s", string(helpers.ToBytes(payload)))
 
 	url := fmt.Sprintf("%s/mpesa/c2b/v1/registerurl", config.MpesaApiUrl)
 	res, err := gttp.Post(url, headers, payload)

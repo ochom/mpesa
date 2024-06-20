@@ -5,6 +5,7 @@ import "github.com/ochom/mpesa/src/models"
 // CreateAccountRequest the payload required to initiate an mpesa stk push
 type CreateAccountRequest struct {
 	ShortCode         string             `json:"short_code" validate:"required"`
+	Name              string             `json:"name" validate:"required"`
 	Type              models.AccountType `json:"type" validate:"required"`
 	PassKey           string             `json:"pass_key"`
 	ConsumerKey       string             `json:"consumer_key"`

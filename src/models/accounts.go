@@ -17,6 +17,7 @@ const (
 type Account struct {
 	gorm.Model
 	ShortCode         string      `json:"short_code" gorm:"index"`
+	Name              string      `json:"name"` // a name to easily identify the account
 	Type              AccountType `json:"type"`
 	PassKey           string      `json:"pass_key"`
 	ConsumerKey       string      `json:"consumer_key"`
@@ -29,9 +30,10 @@ type Account struct {
 }
 
 // NewAccount ...
-func NewAccount(accType AccountType, shortCode, passKey, consumerKey, consumerSecrete string) *Account {
+func NewAccount(accType AccountType, shortCode, name, passKey, consumerKey, consumerSecrete string) *Account {
 	return &Account{
 		ShortCode:         shortCode,
+		Name:              name,
 		PassKey:           passKey,
 		ConsumerKey:       consumerKey,
 		ConsumerSecrete:   consumerSecrete,

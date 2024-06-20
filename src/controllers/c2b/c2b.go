@@ -2,6 +2,7 @@ package c2b
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/ochom/gutils/cache"
@@ -37,8 +38,14 @@ func RegisterUrls(req map[string]string) {
 		"Content-Type":  "application/json",
 	}
 
-	payload := map[string]string{
-		"ShortCode":       account.ShortCode,
+	shortCode, err := strconv.Atoi(account.ShortCode)
+	if err != nil {
+		logs.Error("failed to convert short code: %v", err)
+		return
+	}
+
+	payload := map[string]any{
+		"ShortCode":       shortCode,
 		"ResponseType":    "Completed",
 		"ConfirmationURL": req["confirmation_url"],
 		"ValidationURL":   req["validation_url"],

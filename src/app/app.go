@@ -26,23 +26,23 @@ func New() *fiber.App {
 	// c2b ...
 	c2b := v1.Group("/c2b")
 	c2b.Post("/initiate", handlers.HandleStkPush)
-	c2b.Post("/result", safOrigins(handlers.HandleC2BResult))
-	c2b.Post("/rest/validate", safOrigins(handlers.HandleRestValidation))
-	c2b.Post("/rest/confirm", safOrigins(handlers.HandleRestConfirmation))
+	c2b.Post("/result", safOrigins(), handlers.HandleC2BResult)
+	c2b.Post("/rest/validate", safOrigins(), handlers.HandleRestValidation)
+	c2b.Post("/rest/confirm", safOrigins(), handlers.HandleRestConfirmation)
 	c2b.Post("/soap/validate", handlers.HandleSoapValidation)
 	c2b.Post("/soap/confirm", handlers.HandleSoapConfirmation)
 
 	// b2c ...
 	b2c := v1.Group("b2c")
-	b2c.Post("/initiate", b2cOrigins(handlers.HandleInitiatePayment))
-	b2c.Post("/result", safOrigins(handlers.HandleB2CResult))
-	b2c.Post("/timeout", safOrigins(handlers.HandleB2cTimeout))
+	b2c.Post("/initiate", b2cOrigins(), handlers.HandleInitiatePayment)
+	b2c.Post("/result", safOrigins(), handlers.HandleB2CResult)
+	b2c.Post("/timeout", safOrigins(), handlers.HandleB2cTimeout)
 
 	// tax ...
 	tax := v1.Group("/tax")
-	tax.Post("/initiate", taxOrigins(handlers.HandleTaxRemittance))
-	tax.Post("/result", safOrigins(handlers.HandleTaxResult))
-	tax.Post("/timeout", safOrigins(handlers.HandleTaxTimeout))
+	tax.Post("/initiate", taxOrigins(), handlers.HandleTaxRemittance)
+	tax.Post("/result", safOrigins(), handlers.HandleTaxResult)
+	tax.Post("/timeout", safOrigins(), handlers.HandleTaxTimeout)
 
 	return app
 }

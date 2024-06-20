@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/basicauth"
+	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/ochom/gutils/logs"
 	"github.com/ochom/mpesa/src/app/config"
 )
@@ -23,7 +24,9 @@ func basicAuth() fiber.Handler {
 	})
 }
 
-func safOrigins(next fiber.Handler) fiber.Handler {
+var crs = cors.ConfigDefault
+
+func safOrigins() fiber.Handler {
 	allowedOrigins := []string{
 		"196.201.214.200",
 		"196.201.214.206",
@@ -39,61 +42,38 @@ func safOrigins(next fiber.Handler) fiber.Handler {
 		"196.201.212.69",
 	}
 
-	return func(c fiber.Ctx) error {
-		origin := c.Get("Origin")
-		if slices.Contains(allowedOrigins, origin) {
-			return next(c)
-		}
-
-		logs.Warn("received request from unknown origin: %s", origin)
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"message": "forbidden",
-		})
+	crs.AllowOriginsFunc = func(origin string) bool {
+		logs.Info("Receive request from origin: %s", origin)
+		return slices.Contains(allowedOrigins, origin)
 	}
+
+	return cors.New(crs)
 }
 
-func b2cOrigins(next fiber.Handler) fiber.Handler {
-	return func(c fiber.Ctx) error {
-		allowedOrigins := config.B2CAllowedOrigins
-		if allowedOrigins == "" {
-			allowedOrigins = "*"
+func b2cOrigins() fiber.Handler {
+	allowedOrigins := config.B2CAllowedOrigins
+
+	crs.AllowOriginsFunc = func(origin string) bool {
+		logs.Info("Receive request from origin: %s", origin)
+		if allowedOrigins == "" || allowedOrigins == "*" {
+			return true
 		}
 
-		if allowedOrigins == "*" {
-			return next(c)
-		}
-
-		origin := c.Get("Origin")
-		if strings.Contains(allowedOrigins, origin) {
-			return next(c)
-		}
-
-		logs.Warn("received b2c request from unknown origin: %s", origin)
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"message": "forbidden",
-		})
+		return strings.Contains(allowedOrigins, origin)
 	}
+
+	return cors.New(crs)
 }
 
-func taxOrigins(next fiber.Handler) fiber.Handler {
-	return func(c fiber.Ctx) error {
-		allowedOrigins := config.TaxAllowedOrigins
-		if allowedOrigins == "" {
-			allowedOrigins = "*"
+func taxOrigins() fiber.Handler {
+	allowedOrigins := config.TaxAllowedOrigins
+	crs.AllowOriginsFunc = func(origin string) bool {
+		logs.Info("Receive request from origin: %s", origin)
+		if allowedOrigins == "" || allowedOrigins == "*" {
+			return true
 		}
 
-		if allowedOrigins == "*" {
-			return c.Next()
-		}
-
-		origin := c.Get("Origin")
-		if strings.Contains(allowedOrigins, origin) {
-			return next(c)
-		}
-
-		logs.Warn("received tax request from unknown origin: %s", origin)
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"message": "forbidden",
-		})
+		return strings.Contains(allowedOrigins, origin)
 	}
+	return cors.New(crs)
 }

@@ -16,30 +16,33 @@ func New() *fiber.App {
 
 	// register routes
 	v1 := app.Group("/v1")
+	sc := v1.Group("/accounts")
+	sc.Use(basicAuth())
+	sc.Get("/", handlers.HandleListShortCodes)
+	sc.Post("/", handlers.HandleCreateShortCode)
+	sc.Put("/:id", handlers.HandleUpdateShortCode)
 
 	// c2b ...
 	c2b := v1.Group("/c2b")
-	c2b.Post("/register-urls", handlers.HandleC2BRegisterUrls)
+	c2b.Post("/register-urls", basicAuth(), handlers.HandleC2BRegisterUrls)
 	c2b.Post("/initiate", handlers.HandleStkPush)
-	c2b.Post("/result", handlers.HandleC2BResult)
-	c2b.Post("/rest/validate", handlers.HandleRestValidation)
-	c2b.Post("/rest/confirm", handlers.HandleRestConfirmation)
+	c2b.Post("/result", safOrigins(handlers.HandleC2BResult))
+	c2b.Post("/rest/validate", safOrigins(handlers.HandleRestValidation))
+	c2b.Post("/rest/confirm", safOrigins(handlers.HandleRestConfirmation))
 	c2b.Post("/soap/validate", handlers.HandleSoapValidation)
 	c2b.Post("/soap/confirm", handlers.HandleSoapConfirmation)
 
 	// b2c ...
 	b2c := v1.Group("b2c")
-	b2c.Use(b2cCors())
-	b2c.Post("/initiate", handlers.HandleInitiatePayment)
-	b2c.Post("/result", handlers.HandleB2CResult)
-	b2c.Post("/timeout", handlers.HandleB2cTimeout)
+	b2c.Post("/initiate", b2cOrigins(handlers.HandleInitiatePayment))
+	b2c.Post("/result", safOrigins(handlers.HandleB2CResult))
+	b2c.Post("/timeout", safOrigins(handlers.HandleB2cTimeout))
 
 	// tax ...
 	tax := v1.Group("/tax")
-	tax.Use(taxCors())
-	tax.Post("/initiate", handlers.HandleTaxRemittance)
-	tax.Post("/result", handlers.HandleTaxResult)
-	tax.Post("/timeout", handlers.HandleTaxTimeout)
+	tax.Post("/initiate", taxOrigins(handlers.HandleTaxRemittance))
+	tax.Post("/result", safOrigins(handlers.HandleTaxResult))
+	tax.Post("/timeout", safOrigins(handlers.HandleTaxTimeout))
 
 	return app
 }

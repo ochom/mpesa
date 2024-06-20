@@ -7,6 +7,7 @@ import (
 	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/logs"
 	"github.com/ochom/gutils/sql"
+	"github.com/ochom/gutils/uuid"
 	"github.com/ochom/mpesa/src/app/config"
 	"github.com/ochom/mpesa/src/controllers/auth"
 	"github.com/ochom/mpesa/src/domain"
@@ -16,38 +17,34 @@ import (
 
 // InitiatePayment initiates an mpesa b2c payment
 func InitiatePayment(req domain.B2cRequest) {
-	payment := models.NewBusinessPayment(req.RequestId, req.PhoneNumber, req.Amount, req.CallbackUrl)
+	account, err := sql.FindOneById[models.Account](req.AccountId)
+	if err != nil {
+		logs.Error("failed to find account: %v", err)
+		return
+	}
+
+	payment := models.NewBusinessPayment(account.ID, req.RequestId, req.PhoneNumber, req.Amount, req.CallbackUrl)
 	if err := sql.Create(payment); err != nil {
 		logs.Error("Error creating payment: %v", err)
 		return
 	}
 
-	username := config.MpesaB2CConsumerKey
-	password := config.MpesaB2CConsumerSecret
-
 	headers := map[string]string{
-		"Authorization": "Bearer " + auth.Authenticate("mpesa_b2c_token", username, password),
+		"Authorization": "Bearer " + auth.Authenticate(account),
 		"Content-Type":  "application/json",
 	}
 
-	certPath := config.MpesaB2CCertificatePath
-	initiatorPassword := config.MpesaB2CInitiatorPassword
-	securityCredential := auth.GetSecurityCredentials("mpesa_b2c_security", certPath, initiatorPassword)
-
-	resultUrl := fmt.Sprintf("%s/v1/b2c/result?id=%s", config.BaseUrl, payment.Uuid)
-	timeoutUrl := fmt.Sprintf("%s/v1/b2c/timeout?id=%s", config.BaseUrl, payment.Uuid)
-
 	payload := map[string]string{
-		"OriginatorConversationID": payment.Uuid,
-		"InitiatorName":            config.MpesaB2CInitiatorName,
-		"SecurityCredential":       securityCredential,
+		"OriginatorConversationID": uuid.New(),
+		"InitiatorName":            account.InitiatorName,
+		"SecurityCredential":       auth.GetSecurityCredentials(account),
 		"CommandID":                "BusinessPayment",
 		"Amount":                   req.Amount,
-		"PartyA":                   config.MpesaB2CShortCode,
+		"PartyA":                   account.ShortCode,
 		"PartyB":                   payment.PhoneNumber,
-		"Remarks":                  config.MpesaB2CPaymentComment,
-		"QueueTimeOutURL":          resultUrl,
-		"ResultURL":                timeoutUrl,
+		"Remarks":                  "OK",
+		"QueueTimeOutURL":          fmt.Sprintf("%s/v1/b2c/timeout?id=%d", config.BaseUrl, payment.ID),
+		"ResultURL":                fmt.Sprintf("%s/v1/b2c/result?id=%d", config.BaseUrl, payment.ID),
 		"Occassion":                "Payout",
 	}
 

@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"encoding/base64"
 	"fmt"
 	"time"
 
@@ -10,17 +9,19 @@ import (
 	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/logs"
 	"github.com/ochom/mpesa/src/app/config"
+	"github.com/ochom/mpesa/src/models"
 	"github.com/ochom/mpesa/src/utils"
 )
 
-func Authenticate(tokenName, username, password string) string {
+func Authenticate(account *models.Account) string {
+	tokenName := fmt.Sprintf("mpesa_%s_token_%d", account.Type, account.ID)
 	cached := cache.Get(tokenName)
 	if cached != nil {
 		return string(cached)
 	}
 
 	headers := map[string]string{
-		"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(username+":"+password)),
+		"Authorization": "Basic " + utils.Encode([]byte(account.ConsumerKey+":"+account.ConsumerSecrete)),
 	}
 
 	url := fmt.Sprintf("%s/oauth/v1/generate?grant_type=client_credentials", config.MpesaApiUrl)
@@ -41,13 +42,14 @@ func Authenticate(tokenName, username, password string) string {
 	return token
 }
 
-func GetSecurityCredentials(tokenName, certPath, password string) string {
+func GetSecurityCredentials(account *models.Account) string {
+	tokenName := fmt.Sprintf("mpesa_%s_token_%d", account.Type, account.ID)
 	cached := cache.Get(tokenName)
 	if cached != nil {
 		return string(cached)
 	}
 
-	encoded := utils.HashText(certPath, password)
+	encoded := utils.HashText(account.Certificate, account.InitiatorPassword)
 	cache.Set(tokenName, []byte(encoded))
 	return encoded
 }

@@ -16,28 +16,28 @@ import (
 
 // InitiatePayment initiates an mpesa tax payment
 func InitiatePayment(req *domain.TaxRequest) {
+	account, err := sql.FindOneById[models.Account](req.AccountId)
+	if err != nil {
+		logs.Error("failed to find account: %v", err)
+		return
+	}
+
 	payment := models.NewTaxPayment(req.RequestId, req.ShortCode, req.PaymentRequestNumber, req.Amount, req.CallbackUrl)
 	if err := sql.Create(payment); err != nil {
 		logs.Error("Error creating payment: %v", err)
 		return
 	}
 
-	username := config.MpesaTaxConsumerKey
-	password := config.MpesaTaxConsumerSecrete
-
 	headers := map[string]string{
-		"Authorization": "Bearer " + auth.Authenticate("mpesa_tax_token", username, password),
+		"Authorization": "Bearer " + auth.Authenticate(account),
 		"Content-Type":  "application/json",
 	}
-
-	certPath := config.MpesaTaxCertificatePath
-	initiatorPassword := config.MpesaTaxInitiatorPassword
 
 	resultUrl := fmt.Sprintf("%s/v1/tax/result?id=%s", config.BaseUrl, payment.Uuid)
 	timeoutUrl := fmt.Sprintf("%s/v1/tax/timeout?id=%s", config.BaseUrl, payment.Uuid)
 	payload := map[string]string{
 		"Initiator":              "TaxPayer",
-		"SecurityCredential":     auth.GetSecurityCredentials("mpesa_tax_security", certPath, initiatorPassword),
+		"SecurityCredential":     auth.GetSecurityCredentials(account),
 		"Command ID":             "PayTaxToKRA",
 		"SenderIdentifierType":   "4",
 		"RecieverIdentifierType": "4",

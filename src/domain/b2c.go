@@ -1,6 +1,7 @@
 package domain
 
 type B2cRequest struct {
+	AccountId   string `json:"account_id" validate:"required"`
 	RequestId   string `json:"request_id" validate:"required"`
 	PhoneNumber string `json:"phone_number" validate:"required"`
 	Amount      string `json:"amount" validate:"required"`

@@ -68,7 +68,10 @@ func InitiatePayment(req *domain.MpesaExpressRequest) {
 	}
 
 	refId := uuid.New()
-	cache.SetWithExpiry(fmt.Sprintf("stk-%s", refId), helpers.ToBytes(req), 5*time.Minute)
+	if err := cache.SetWithExpiry(fmt.Sprintf("stk-%s", refId), req, 5*time.Minute); err != nil {
+		logs.Error("failed to set cache: %v", err)
+		return
+	}
 
 	timestamp := time.Now().Format("20060102150405")
 	callbackUrl := fmt.Sprintf("%s/v1/c2b/result?refId=%s", config.BaseUrl, refId)
@@ -113,9 +116,9 @@ func InitiatePayment(req *domain.MpesaExpressRequest) {
 
 // ResultPayment processes the payment result for stk push
 func ResultPayment(id string, req *domain.MpesaExpressCallback) {
-	cacheBytes := cache.Get(fmt.Sprintf("stk-%s", id))
-	if cacheBytes == nil {
-		logs.Error("failed to get stk payment cache")
+	cacheData, err := cache.Get[domain.MpesaExpressRequest](fmt.Sprintf("stk-%s", id))
+	if err != nil {
+		logs.Error("failed to get stk payment cache: %v", err)
 		return
 	}
 
@@ -128,8 +131,6 @@ func ResultPayment(id string, req *domain.MpesaExpressCallback) {
 	for _, item := range req.Body.StkCallback.CallbackMetadata.Item {
 		meta[item.Name] = item.Value
 	}
-
-	cacheData := helpers.FromBytes[domain.MpesaExpressRequest](cacheBytes)
 
 	txId := meta["MpesaReceiptNumber"].(string)
 	txTime := time.Now().Format("20060102150405")

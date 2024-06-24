@@ -15,11 +15,19 @@ import (
 
 func Authenticate(account *models.Account) string {
 	tokenName := fmt.Sprintf("mpesa_%s_token_%d", account.Type, account.ID)
-	cached := cache.Get(tokenName)
-	if cached != nil {
-		return string(cached)
+	cached, err := cache.Get[map[string]string](tokenName)
+	if err != nil {
+		return setToken(account, tokenName)
 	}
 
+	if cached["access_token"] == "" {
+		return setToken(account, tokenName)
+	}
+
+	return cached["access_token"]
+}
+
+func setToken(account *models.Account, tokenName string) string {
 	headers := map[string]string{
 		"Authorization": "Basic " + utils.Encode([]byte(account.ConsumerKey+":"+account.ConsumerSecrete)),
 	}
@@ -38,18 +46,36 @@ func Authenticate(account *models.Account) string {
 		return ""
 	}
 
-	cache.SetWithExpiry(tokenName, []byte(token), 59*time.Minute)
+	if err := cache.SetWithExpiry(tokenName, tokens, 59*time.Minute); err != nil {
+		logs.Error("failed to set token: %v", err)
+	}
+
 	return token
 }
 
 func GetSecurityCredentials(account *models.Account) string {
 	tokenName := fmt.Sprintf("mpesa_%s_token_%d", account.Type, account.ID)
-	cached := cache.Get(tokenName)
-	if cached != nil {
-		return string(cached)
+	cached, err := cache.Get[map[string]string](tokenName)
+	if err != nil {
+		return setSecurityToken(account, tokenName)
 	}
 
+	if cached["security_token"] == "" {
+		return setSecurityToken(account, tokenName)
+	}
+
+	return cached["security_token"]
+}
+
+func setSecurityToken(account *models.Account, tokenName string) string {
 	encoded := utils.HashText(account.Certificate, account.InitiatorPassword)
-	cache.Set(tokenName, []byte(encoded))
+	data := map[string]string{
+		"security_token": encoded,
+	}
+
+	if err := cache.SetWithExpiry(tokenName, data, 59*time.Minute); err != nil {
+		logs.Error("failed to set token: %v", err)
+	}
+
 	return encoded
 }

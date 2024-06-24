@@ -16,6 +16,7 @@ RUN go mod download
 
 COPY . ./
 
+# enable cgo for sqlite to work
 ENV CGO_ENABLED=1 
 
 # build the server

@@ -5,11 +5,15 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
+	"runtime"
+	"sync"
 	"time"
 
 	"github.com/ochom/gutils/logs"
 	"github.com/ochom/gutils/sql"
 )
+
+var threshold = 50_000_000
 
 type Number struct {
 	Id    int    `gorm:"primaryKey"`
@@ -34,30 +38,58 @@ func init() {
 }
 
 func main() {
+	count := sql.Count[Number]()
+
 	// clear database
-	if err := sql.Conn().Exec("DELETE FROM numbers").Error; err != nil {
+	if err := clearData(count); err != nil {
 		panic(err)
 	}
 
 	// seed data
 	start := time.Now()
-	if err := seed(); err != nil {
+	if err := seed(count); err != nil {
 		panic(err)
 	}
 
 	logs.Info("seeding took %s", time.Since(start))
 }
 
-func seed() error {
-	// populateNumbers ...
-	populateNumbers()
+func clearData(count int) error {
+	start := time.Now()
+	if count > threshold {
+		return nil
+	}
+
+	if err := sql.Conn().Exec("DELETE FROM numbers").Error; err != nil {
+		return err
+	}
+
+	logs.Info("clearing took %s", time.Since(start))
+	return nil
+}
+
+func seed(count int) error {
+	if count < threshold {
+		// populateNumbers ...
+		populateNumbers()
+	}
 
 	return writeNumbersToDatabase()
 }
 
 func populateNumbers() {
-	// seed number between 701 and 729
-	for i := 701; i <= 729; i++ {
+	// seed number for 70X
+	for i := 700; i <= 709; i++ {
+		createNumber(fmt.Sprintf("254%d", i), 1000000, "%06d")
+	}
+
+	// seed number for 71X
+	for i := 710; i <= 719; i++ {
+		createNumber(fmt.Sprintf("254%d", i), 1000000, "%06d")
+	}
+
+	// seed number for 72X
+	for i := 720; i <= 729; i++ {
 		createNumber(fmt.Sprintf("254%d", i), 1000000, "%06d")
 	}
 
@@ -67,31 +99,33 @@ func populateNumbers() {
 	}
 
 	// seed more...
-	prefixes := []int{45, 46, 48, 57, 58, 59}
+	prefixes := []int{745, 746, 748, 757, 758, 759}
 	for _, p := range prefixes {
-		createNumber(fmt.Sprintf("2547%d", p), 1000000, "%06d")
+		createNumber(fmt.Sprintf("254%d", p), 1000000, "%06d")
 	}
 
 	// seed more...
-	prefixes = []int{68, 69}
+	prefixes = []int{768, 769}
 	for _, p := range prefixes {
-		createNumber(fmt.Sprintf("2547%d", p), 1000000, "%06d")
+		createNumber(fmt.Sprintf("254%d", p), 1000000, "%06d")
 	}
 
-	// seed 90...99
-	for i := 90; i <= 99; i++ {
-		createNumber(fmt.Sprintf("2547%d", i), 1000000, "%06d")
+	// seed 790...799
+	for i := 790; i <= 799; i++ {
+		createNumber(fmt.Sprintf("254%d", i), 1000000, "%06d")
 	}
 
-	// create possible number of the format with format 25411xxxxxxx
-	createNumber("25411", 10000000, "%07d")
+	// seed 11x
+	for i := 110; i <= 119; i++ {
+		createNumber(fmt.Sprintf("254%d", i), 1000000, "%06d")
+	}
 }
 
 func createNumber(prefix string, max int, format string) {
 	logs.Info("Seeding %s ...", prefix)
 	start := time.Now()
 
-	csvFile, err := os.Create("numbers.csv")
+	csvFile, err := os.OpenFile("numbers.csv", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return
 	}
@@ -126,43 +160,48 @@ func writeNumbersToDatabase() error {
 
 	reader := csv.NewReader(file)
 
-	chunkSize := 1000
-	for {
-		chunk := [][]string{}
-		// Read up to chunkSize rows at a time
-		for i := 0; i < chunkSize; i++ {
-			row, err := reader.Read()
-			if err != nil {
-				break // End of file
+	jobs := make(chan string, threshold)
+	results := make(chan Number, threshold)
+
+	numWorkers := runtime.NumCPU()
+	var wg sync.WaitGroup
+
+	for w := 0; w < numWorkers; w++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for phoneNumber := range jobs {
+				results <- Number{
+					Hash:  hashNumber(phoneNumber),
+					Phone: phoneNumber,
+				}
 			}
-			chunk = append(chunk, row)
-		}
-
-		if err := saveChunk(chunk); err != nil {
-			break
-		}
-
-		if len(chunk) == 0 {
-			break
-		}
+		}()
 	}
 
-	return nil
-}
+	for {
+		row, err := reader.Read()
+		if err != nil {
+			break
+		}
 
-func saveChunk(chunk [][]string) error {
+		jobs <- row[0]
+	}
+
+	close(jobs)
+
+	wg.Wait()
+	close(results)
+
 	numbers := []Number{}
-	for _, row := range chunk {
-		numbers = append(numbers, Number{
-			Hash:  hashNumber(row[0]),
-			Phone: row[0],
-		})
+	for r := range results {
+		numbers = append(numbers, r)
 	}
 
+	logs.Info("writing %d numbers to database", len(numbers))
 	if err := sql.Conn().CreateInBatches(&numbers, 1000).Error; err != nil {
 		return err
 	}
 
-	logs.Info("Saved %d numbers ...", len(numbers))
 	return nil
 }

@@ -7,12 +7,14 @@ replace github.com/mattn/go-sqlite3 => github.com/leso-kn/go-sqlite3 v0.0.0-2023
 require (
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/gofiber/fiber/v3 v3.0.0-beta.2
-	github.com/ochom/gutils v1.1.2
+	github.com/ochom/gutils v1.1.7
 	gorm.io/gorm v1.25.5
 )
 
 require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
@@ -30,6 +32,7 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-sqlite3 v1.14.18 // indirect
+	github.com/redis/go-redis/v9 v9.5.3 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.52.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect

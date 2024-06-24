@@ -46,7 +46,7 @@ func setToken(account *models.Account, tokenName string) string {
 		return ""
 	}
 
-	if err := cache.SetWithExpiry(tokenName, tokens, 59*time.Minute); err != nil {
+	if err := cache.SetWithExpiry(tokenName, tokens, 50*time.Minute); err != nil {
 		logs.Error("failed to set token: %v", err)
 	}
 
@@ -73,7 +73,7 @@ func setSecurityToken(account *models.Account, tokenName string) string {
 		"security_token": encoded,
 	}
 
-	if err := cache.SetWithExpiry(tokenName, data, 59*time.Minute); err != nil {
+	if err := cache.SetWithExpiry(tokenName, data, 50*time.Minute); err != nil {
 		logs.Error("failed to set token: %v", err)
 	}
 

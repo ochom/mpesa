@@ -17,6 +17,7 @@ func HandleListAccounts(ctx fiber.Ctx) error {
 		return map[string]any{
 			"id":           account.ID,
 			"short_code":   account.ShortCode,
+			"name":         account.Name,
 			"type":         account.Type,
 			"created_at":   account.CreatedAt,
 			"updated_at":   account.UpdatedAt,
@@ -39,6 +40,7 @@ func HandleSearchAccounts(ctx fiber.Ctx) error {
 		return map[string]any{
 			"id":           account.ID,
 			"short_code":   account.ShortCode,
+			"name":         account.Name,
 			"type":         account.Type,
 			"created_at":   account.CreatedAt,
 			"updated_at":   account.UpdatedAt,
@@ -65,7 +67,7 @@ func HandleCreateAccount(ctx fiber.Ctx) error {
 		return ctx.JSON(fiber.Map{"message": "account already exists"})
 	}
 
-	account := models.NewAccount(req.Type, req.ShortCode, req.PassKey, req.ConsumerKey, req.ConsumerSecrete)
+	account := models.NewAccount(req.Type, req.ShortCode, req.Name, req.PassKey, req.ConsumerKey, req.ConsumerSecrete)
 	account.ValidationUrl = req.ValidationUrl
 	account.ConfirmationUrl = req.ConfirmationUrl
 	account.InitiatorName = req.InitiatorName
@@ -89,6 +91,10 @@ func HandleUpdateAccount(ctx fiber.Ctx) error {
 	req, err := parseData[domain.CreateAccountRequest](ctx)
 	if err != nil {
 		return err
+	}
+
+	if req.Name != "" {
+		account.Name = req.Name
 	}
 
 	if req.PassKey != "" {
@@ -124,6 +130,15 @@ func HandleUpdateAccount(ctx fiber.Ctx) error {
 	}
 
 	if err := sql.Update(account); err != nil {
+		return err
+	}
+
+	return ctx.JSON(fiber.Map{"message": "success"})
+}
+
+// HandleDeleteAccount ...
+func HandleDeleteAccount(ctx fiber.Ctx) error {
+	if err := sql.DeleteById[models.Account](ctx.Params("id")); err != nil {
 		return err
 	}
 

@@ -3,10 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"time"
 
+	"github.com/ochom/gutils/env"
 	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/logs"
 	"github.com/ochom/gutils/sql"
@@ -14,6 +16,19 @@ import (
 	"github.com/ochom/mpesa/src/app/config"
 	"github.com/ochom/mpesa/src/models"
 )
+
+// init logger
+func init() {
+	logPath := env.Get("LOGS_PATH", "./data/logs.txt")
+	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		logs.Error("[❌] Failed to open log file: %s", err.Error())
+		return
+	}
+
+	logWriter := io.MultiWriter(os.Stdout, f)
+	logs.SetOutput(logWriter)
+}
 
 func init() {
 	// init database

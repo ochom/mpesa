@@ -20,6 +20,9 @@ func HandleStkPush(ctx fiber.Ctx) error {
 	}
 
 	req.PhoneNumber = helpers.ParseMobile(req.PhoneNumber)
+	if req.InvoiceNumber == "" {
+		req.InvoiceNumber = req.PhoneNumber
+	}
 
 	go c2b.InitiatePayment(&req)
 	return ctx.JSON(fiber.Map{"message": "success"})

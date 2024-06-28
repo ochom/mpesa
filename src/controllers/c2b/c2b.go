@@ -86,7 +86,7 @@ func InitiatePayment(req *domain.MpesaExpressRequest) {
 		"PartyB":            account.ShortCode,
 		"PhoneNumber":       req.PhoneNumber,
 		"CallBackURL":       callbackUrl,
-		"AccountReference":  "Customer Pay Bill Online",
+		"AccountReference":  req.InvoiceNumber,
 		"TransactionDesc":   "Pay bill",
 	}
 
@@ -136,7 +136,7 @@ func ResultPayment(id string, req *domain.MpesaExpressCallback) {
 	txTime := time.Now().Format("20060102150405")
 	txAmount := cacheData.Amount
 	billRefNumber := cacheData.PhoneNumber
-	invoiceNumber := req.Body.StkCallback.MerchantRequestID
+	invoiceNumber := cacheData.InvoiceNumber
 
 	customerPayment := models.NewCustomerPayment(txId, txTime, txAmount, billRefNumber, invoiceNumber, billRefNumber)
 	if err := sql.Create(customerPayment); err != nil {

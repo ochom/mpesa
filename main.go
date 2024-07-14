@@ -60,7 +60,6 @@ func main() {
 	signal.Notify(quit, os.Interrupt)
 
 	<-quit
-
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := srv.ShutdownWithContext(ctx); err != nil {

@@ -1,14 +1,23 @@
 package handlers
 
 import (
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 	"github.com/ochom/gutils/logs"
+	"github.com/ochom/gutils/sql"
 	"github.com/ochom/mpesa/src/controllers/b2c"
 	"github.com/ochom/mpesa/src/domain"
+	"github.com/ochom/mpesa/src/models"
 )
 
+// HandleGetB2CPayments ...
+func HandleGetB2CPayments(ctx *fiber.Ctx) error {
+	page, limit := ctx.QueryInt("page", 1), ctx.QueryInt("limit", 10)
+	payments := sql.FindWithLimit[models.BusinessPayment](page, limit)
+	return ctx.JSON(payments)
+}
+
 // HandleInitiatePayment ...
-func HandleInitiatePayment(ctx fiber.Ctx) error {
+func HandleInitiatePayment(ctx *fiber.Ctx) error {
 	req, err := parseDataValidate[domain.B2cRequest](ctx)
 	if err != nil {
 		return err
@@ -19,7 +28,7 @@ func HandleInitiatePayment(ctx fiber.Ctx) error {
 }
 
 // HandleB2CResult ...
-func HandleB2CResult(ctx fiber.Ctx) error {
+func HandleB2CResult(ctx *fiber.Ctx) error {
 	logs.Info("b2c result => %s", string(ctx.Body()))
 
 	id := ctx.Query("id")
@@ -39,7 +48,7 @@ func HandleB2CResult(ctx fiber.Ctx) error {
 }
 
 // HandleB2cTimeout ...
-func HandleB2cTimeout(ctx fiber.Ctx) error {
+func HandleB2cTimeout(ctx *fiber.Ctx) error {
 	logs.Info("b2c timeout => %s", string(ctx.Body()))
 
 	id := ctx.Params("id")

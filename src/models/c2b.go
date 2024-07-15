@@ -9,26 +9,28 @@ import (
 type CustomerPayment struct {
 	gorm.Model
 	Uuid                    string `json:"uuid"`
+	AccountID               int    `json:"account_id" gorm:"index"`
 	TransactionType         string `json:"transaction_type,omitempty"`
 	TransactionID           string `json:"transaction_id,omitempty" gorm:"unique"`
 	TransactionTime         string `json:"transaction_time,omitempty"`
 	PhoneNumber             string `json:"phone_number,omitempty" gorm:"index"`
-	TransactionAmount       string `json:"transaction_amount,omitempty"`
+	Amount                  string `json:"amount,omitempty"`
 	BillRefNumber           string `json:"bill_ref_number,omitempty"`
 	InvoiceNumber           string `json:"invoice_number,omitempty"`
 	ThirdPartyTransactionID string `json:"third_party_transaction_id,omitempty"`
 }
 
 // NewCustomerPayment create a new CustomerPayment
-func NewCustomerPayment(txId, txTime, txAmount, billRefNumber, invoiceNumber, msisdn string) *CustomerPayment {
+func NewCustomerPayment(accountId int, txId, txTime, txAmount, billRefNumber, invoiceNumber, msisdn string) *CustomerPayment {
 	return &CustomerPayment{
-		TransactionType:   "CustomerPayBillOnline",
-		TransactionID:     txId,
-		TransactionTime:   txTime,
-		TransactionAmount: txAmount,
-		BillRefNumber:     billRefNumber,
-		InvoiceNumber:     invoiceNumber,
-		PhoneNumber:       getPhoneNumber(billRefNumber, msisdn),
+		AccountID:       accountId,
+		TransactionType: "CustomerPayBillOnline",
+		TransactionID:   txId,
+		TransactionTime: txTime,
+		Amount:          txAmount,
+		BillRefNumber:   billRefNumber,
+		InvoiceNumber:   invoiceNumber,
+		PhoneNumber:     getPhoneNumber(billRefNumber, msisdn),
 	}
 }
 

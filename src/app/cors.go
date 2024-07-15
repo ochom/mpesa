@@ -4,12 +4,23 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/basicauth"
-	"github.com/gofiber/fiber/v3/middleware/cors"
+	"github.com/gofiber/contrib/swagger"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/basicauth"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/ochom/gutils/logs"
 	"github.com/ochom/mpesa/src/app/config"
 )
+
+func docs() func(*fiber.Ctx) error {
+	return swagger.New(swagger.Config{
+		BasePath: "/",
+		FilePath: "./docs/swagger.yaml",
+		Path:     "docs",
+		Title:    "Mpesa Broker API",
+		CacheAge: 10,
+	})
+}
 
 func getCors() cors.Config {
 	crs := cors.ConfigDefault
@@ -22,7 +33,7 @@ func basicAuth() fiber.Handler {
 		Users: map[string]string{
 			config.BasicAuthUsername: config.BasicAuthPassword,
 		},
-		Unauthorized: func(c fiber.Ctx) error {
+		Unauthorized: func(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"message": "Unauthorized",
 			})

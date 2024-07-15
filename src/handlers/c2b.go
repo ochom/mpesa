@@ -3,17 +3,26 @@ package handlers
 import (
 	"strings"
 
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/logs"
+	"github.com/ochom/gutils/sql"
 	"github.com/ochom/gutils/uuid"
 	"github.com/ochom/mpesa/src/app/config"
 	"github.com/ochom/mpesa/src/controllers/c2b"
 	"github.com/ochom/mpesa/src/domain"
+	"github.com/ochom/mpesa/src/models"
 )
 
+// HandleGetC2BPayments ...
+func HandleGetC2BPayments(ctx *fiber.Ctx) error {
+	page, limit := ctx.QueryInt("page", 1), ctx.QueryInt("limit", 10)
+	payments := sql.FindWithLimit[models.CustomerPayment](page, limit)
+	return ctx.JSON(payments)
+}
+
 // HandleStkPush ...
-func HandleStkPush(ctx fiber.Ctx) error {
+func HandleStkPush(ctx *fiber.Ctx) error {
 	req, err := parseDataValidate[domain.MpesaExpressRequest](ctx)
 	if err != nil {
 		return err
@@ -29,7 +38,7 @@ func HandleStkPush(ctx fiber.Ctx) error {
 }
 
 // HandleResult ...
-func HandleC2BResult(ctx fiber.Ctx) error {
+func HandleC2BResult(ctx *fiber.Ctx) error {
 	logs.Info("c2b result => %s", string(ctx.Body()))
 
 	id := ctx.Query("refId")
@@ -49,7 +58,7 @@ func HandleC2BResult(ctx fiber.Ctx) error {
 }
 
 // HandleRestValidation ...
-func HandleRestValidation(ctx fiber.Ctx) error {
+func HandleRestValidation(ctx *fiber.Ctx) error {
 	logs.Info("c2b rest validation => %s", string(ctx.Body()))
 
 	req, err := parseDataValidate[domain.ValidationRequest](ctx)
@@ -70,7 +79,7 @@ func HandleRestValidation(ctx fiber.Ctx) error {
 }
 
 // HandleRestConfirmation ...
-func HandleRestConfirmation(ctx fiber.Ctx) error {
+func HandleRestConfirmation(ctx *fiber.Ctx) error {
 	logs.Info("c2b rest confirmation => %s", string(ctx.Body()))
 
 	req, err := parseDataValidate[domain.ValidationRequest](ctx)
@@ -87,7 +96,7 @@ func HandleRestConfirmation(ctx fiber.Ctx) error {
 }
 
 // HandleSoapValidation ...
-func HandleSoapValidation(ctx fiber.Ctx) error {
+func HandleSoapValidation(ctx *fiber.Ctx) error {
 	logs.Info("c2b soap validation => %s", string(ctx.Body()))
 
 	txId := uuid.New()
@@ -99,11 +108,11 @@ func HandleSoapValidation(ctx fiber.Ctx) error {
 }
 
 // HandleSoapConfirmation ...
-func HandleSoapConfirmation(ctx fiber.Ctx) error {
+func HandleSoapConfirmation(ctx *fiber.Ctx) error {
 	logs.Info("c2b soap confirmation => %s", string(ctx.Body()))
 
 	var req domain.SoapPaymentConfirmationRequest
-	if err := ctx.Bind().XML(&req); err != nil {
+	if err := ctx.BodyParser(&req); err != nil {
 		logs.Error("c2b soap confirmation parse error: => %s", err)
 		return err
 	}

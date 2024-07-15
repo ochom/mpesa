@@ -1,6 +1,7 @@
 package app
 
 import (
+	"path"
 	"slices"
 	"strings"
 
@@ -13,13 +14,12 @@ import (
 )
 
 func docs() func(*fiber.Ctx) error {
-	rootPath := env.Get("ROOT_PATH", "")
+	rootPath := env.Get("ROOT_PATH", "/")
 	return swagger.New(swagger.Config{
-		BasePath: rootPath,
+		BasePath: "/",
 		FilePath: "./docs/swagger.yaml",
-		Path:     "docs",
+		Path:     path.Join(rootPath, "docs"),
 		Title:    "Mpesa Broker API",
-		CacheAge: 10,
 	})
 }
 

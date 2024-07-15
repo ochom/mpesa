@@ -9,11 +9,9 @@ import (
 func New() *fiber.App {
 	app := fiber.New()
 	app.Use(cors.New(cors.ConfigDefault))
-	app.Use(docs())
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello Broker")
-	})
+	// serve swagger docs at root
+	app.Static("/", "./docs")
 
 	// register routes
 	v1 := app.Group("/v1")

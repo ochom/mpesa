@@ -1,27 +1,15 @@
 package app
 
 import (
-	"path"
 	"slices"
 	"strings"
 
-	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/basicauth"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/ochom/gutils/env"
 	"github.com/ochom/gutils/logs"
 )
-
-func docs() func(*fiber.Ctx) error {
-	rootPath := env.Get("ROOT_PATH", "/")
-	return swagger.New(swagger.Config{
-		BasePath: "/",
-		FilePath: "./docs/swagger.yaml",
-		Path:     path.Join(rootPath, "docs"),
-		Title:    "Mpesa Broker API",
-	})
-}
 
 func getCors() cors.Config {
 	crs := cors.ConfigDefault

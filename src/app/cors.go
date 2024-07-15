@@ -13,8 +13,9 @@ import (
 )
 
 func docs() func(*fiber.Ctx) error {
+	rootPath := env.Get("ROOT_PATH", "")
 	return swagger.New(swagger.Config{
-		BasePath: "/",
+		BasePath: rootPath,
 		FilePath: "./docs/swagger.yaml",
 		Path:     "docs",
 		Title:    "Mpesa Broker API",

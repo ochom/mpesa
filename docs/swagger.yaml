@@ -91,7 +91,7 @@ paths:
           description: Invalid status value
       security:
         - basicAuth: []
-  /accounts{accountId}:
+  /accounts/{accountId}:
     put:
       tags:
         - Accounts

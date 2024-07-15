@@ -79,14 +79,11 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Account"
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Account"
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Account updated
         "400":
           description: Invalid status value
       security:
@@ -125,10 +122,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Account"
-            application/xml:
-              schema:
-                $ref: "#/components/schemas/Account"
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Account updated
         "400":
           description: Invalid ID supplied
         "404":

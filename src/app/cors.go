@@ -8,8 +8,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/basicauth"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/ochom/gutils/env"
 	"github.com/ochom/gutils/logs"
-	"github.com/ochom/mpesa/src/app/config"
 )
 
 func docs() func(*fiber.Ctx) error {
@@ -29,9 +29,11 @@ func getCors() cors.Config {
 }
 
 func basicAuth() fiber.Handler {
+	username := env.Get("BASIC_AUTH_USERNAME")
+	password := env.Get("BASIC_AUTH_PASSWORD")
 	return basicauth.New(basicauth.Config{
 		Users: map[string]string{
-			config.BasicAuthUsername: config.BasicAuthPassword,
+			username: password,
 		},
 		Unauthorized: func(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -67,11 +69,12 @@ func safOrigins() fiber.Handler {
 }
 
 func b2cOrigins() fiber.Handler {
-	allowedOrigins := config.B2CAllowedOrigins
-
 	crs := getCors()
+
 	crs.AllowOriginsFunc = func(origin string) bool {
 		logs.Info("Receive request from origin: %s", origin)
+
+		allowedOrigins := env.Get("B2C_ALLOWED_ORIGINS")
 		if allowedOrigins == "" || allowedOrigins == "*" {
 			return true
 		}
@@ -82,11 +85,12 @@ func b2cOrigins() fiber.Handler {
 }
 
 func taxOrigins() fiber.Handler {
-	allowedOrigins := config.TaxAllowedOrigins
-
 	crs := getCors()
+
 	crs.AllowOriginsFunc = func(origin string) bool {
 		logs.Info("Receive request from origin: %s", origin)
+
+		allowedOrigins := env.Get("TAX_REMITTANCE_ALLOWED_ORIGINS")
 		if allowedOrigins == "" || allowedOrigins == "*" {
 			return true
 		}

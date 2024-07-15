@@ -8,7 +8,7 @@ require (
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/gofiber/contrib/swagger v1.2.0
 	github.com/gofiber/fiber/v2 v2.52.5
-	github.com/ochom/gutils v1.1.9
+	github.com/ochom/gutils v1.2.3
 	gorm.io/gorm v1.25.5
 )
 

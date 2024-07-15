@@ -32,6 +32,8 @@ COPY --from=build /server /usr/local/bin/app
 RUN mkdir -p /data
 RUN mkdir -p /data/certs
 
+COPY docs /docs
+
 EXPOSE 8080
 
 CMD [ "app" ]

@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 	"github.com/ochom/gutils/logs"
 	"github.com/ochom/mpesa/src/controllers/tax"
 	"github.com/ochom/mpesa/src/domain"
 )
 
-func HandleTaxRemittance(ctx fiber.Ctx) error {
+func HandleTaxRemittance(ctx *fiber.Ctx) error {
 	req, err := parseDataValidate[domain.TaxRequest](ctx)
 	if err != nil {
 		logs.Error("failed to parse data: %v", err)
@@ -19,7 +19,7 @@ func HandleTaxRemittance(ctx fiber.Ctx) error {
 }
 
 // HandleTaxTimeout ...
-func HandleTaxTimeout(ctx fiber.Ctx) error {
+func HandleTaxTimeout(ctx *fiber.Ctx) error {
 	logs.Info("tax timeout => %s", string(ctx.Body()))
 
 	id := ctx.Params("id")
@@ -33,7 +33,7 @@ func HandleTaxTimeout(ctx fiber.Ctx) error {
 }
 
 // HandleTaxResult ...
-func HandleTaxResult(ctx fiber.Ctx) error {
+func HandleTaxResult(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	if id == "" {
 		logs.Error("tax result => id is required")

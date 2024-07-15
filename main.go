@@ -13,7 +13,6 @@ import (
 	"github.com/ochom/gutils/logs"
 	"github.com/ochom/gutils/sql"
 	"github.com/ochom/mpesa/src/app"
-	"github.com/ochom/mpesa/src/app/config"
 	"github.com/ochom/mpesa/src/models"
 )
 
@@ -33,8 +32,8 @@ func init() {
 func init() {
 	// init database
 	cfg := sql.Config{
-		Driver: sql.Driver(config.DbDriver),
-		Url:    config.DbUrl,
+		Driver: env.Int("DATABASE_DRIVER", 0),
+		Url:    env.Get("DATABASE_URL"),
 	}
 
 	if err := sql.New(&cfg); err != nil {
@@ -60,7 +59,6 @@ func main() {
 	signal.Notify(quit, os.Interrupt)
 
 	<-quit
-
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := srv.ShutdownWithContext(ctx); err != nil {

@@ -22,23 +22,18 @@ ENV CGO_ENABLED=1
 # build the server
 RUN go build -o /server .
 
-# build the seeder
-RUN go build -o /seeder ./cmd/seeder/main.go
-
 ##
 ## Deploy
 ##
 FROM alpine:3.20.0 AS deploy
 
-COPY --from=build /server /bin/app
-COPY --from=build /seeder /bin/seeder
-
-RUN chmod +x /bin/app
-RUN chmod +x /bin/seeder
+COPY --from=build /server /usr/local/bin/app
 
 RUN mkdir -p /data
 RUN mkdir -p /data/certs
 
+COPY docs /docs
+
 EXPOSE 8080
 
-CMD [ "/bin/app" ]
+CMD [ "app" ]

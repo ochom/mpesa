@@ -1,8 +1,8 @@
 package app
 
 import (
-	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/cors"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/ochom/mpesa/src/handlers"
 )
 
@@ -10,9 +10,8 @@ func New() *fiber.App {
 	app := fiber.New()
 	app.Use(cors.New(cors.ConfigDefault))
 
-	app.Get("/", func(c fiber.Ctx) error {
-		return c.SendString("Hello Broker")
-	})
+	// serve swagger docs at root
+	app.Static("/", "./docs")
 
 	// register routes
 	v1 := app.Group("/v1")
@@ -26,6 +25,7 @@ func New() *fiber.App {
 
 	// c2b ...
 	c2b := v1.Group("/c2b")
+	c2b.Get("/payments", handlers.HandleGetC2BPayments)
 	c2b.Post("/initiate", handlers.HandleStkPush)
 	c2b.Post("/result", safOrigins(), handlers.HandleC2BResult)
 	c2b.Post("/validate", safOrigins(), handlers.HandleRestValidation)
@@ -35,6 +35,7 @@ func New() *fiber.App {
 
 	// b2c ...
 	b2c := v1.Group("b2c")
+	b2c.Get("/payments", handlers.HandleGetB2CPayments)
 	b2c.Post("/initiate", b2cOrigins(), handlers.HandleInitiatePayment)
 	b2c.Post("/result", safOrigins(), handlers.HandleB2CResult)
 	b2c.Post("/timeout", safOrigins(), handlers.HandleB2cTimeout)

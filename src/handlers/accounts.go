@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 	"github.com/ochom/gutils/arrays"
 	"github.com/ochom/gutils/sql"
 	"github.com/ochom/mpesa/src/controllers/c2b"
@@ -11,7 +11,7 @@ import (
 )
 
 // HandleGetShortcodes ...
-func HandleListAccounts(ctx fiber.Ctx) error {
+func HandleListAccounts(ctx *fiber.Ctx) error {
 	accounts := sql.FindAll[models.Account]()
 	mapped := arrays.Map(accounts, func(account *models.Account) map[string]any {
 		return map[string]any{
@@ -30,7 +30,7 @@ func HandleListAccounts(ctx fiber.Ctx) error {
 }
 
 // HandleSearchAccounts ...
-func HandleSearchAccounts(ctx fiber.Ctx) error {
+func HandleSearchAccounts(ctx *fiber.Ctx) error {
 	id, shortCode, _type := ctx.Query("id"), ctx.Query("short_code"), ctx.Query("type")
 	accounts := sql.FindAll[models.Account](func(d *gorm.DB) *gorm.DB {
 		return d.Where("id = ? OR short_code = ? OR type = ?", id, shortCode, _type)
@@ -53,7 +53,7 @@ func HandleSearchAccounts(ctx fiber.Ctx) error {
 }
 
 // HandleCreateAccount ...
-func HandleCreateAccount(ctx fiber.Ctx) error {
+func HandleCreateAccount(ctx *fiber.Ctx) error {
 	req, err := parseDataValidate[domain.CreateAccountRequest](ctx)
 	if err != nil {
 		return err
@@ -82,7 +82,7 @@ func HandleCreateAccount(ctx fiber.Ctx) error {
 }
 
 // HandleUpdateAccount ...
-func HandleUpdateAccount(ctx fiber.Ctx) error {
+func HandleUpdateAccount(ctx *fiber.Ctx) error {
 	account, err := sql.FindOneById[models.Account](ctx.Params("id"))
 	if err != nil {
 		return err
@@ -137,7 +137,7 @@ func HandleUpdateAccount(ctx fiber.Ctx) error {
 }
 
 // HandleDeleteAccount ...
-func HandleDeleteAccount(ctx fiber.Ctx) error {
+func HandleDeleteAccount(ctx *fiber.Ctx) error {
 	if err := sql.DeleteById[models.Account](ctx.Params("id")); err != nil {
 		return err
 	}
@@ -146,7 +146,7 @@ func HandleDeleteAccount(ctx fiber.Ctx) error {
 }
 
 // HandleC2BRegisterUrls ...
-func HandleC2BRegisterUrls(ctx fiber.Ctx) error {
+func HandleC2BRegisterUrls(ctx *fiber.Ctx) error {
 	req, err := parseData[map[string]string](ctx)
 	if err != nil {
 		return err

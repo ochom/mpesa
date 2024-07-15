@@ -2,27 +2,27 @@ package handlers
 
 import (
 	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v2"
 )
 
 var validate = validator.New()
 
-func parseData[T any](ctx fiber.Ctx) (T, error) {
-	var data T
-	err := ctx.Bind().Body(&data)
-	return data, err
+func parseData[T any](ctx *fiber.Ctx) (T, error) {
+	var req T
+	err := ctx.BodyParser(&req)
+	return req, err
 }
 
-func parseDataValidate[T any](ctx fiber.Ctx) (T, error) {
-	var data T
-	err := ctx.Bind().Body(&data)
+func parseDataValidate[T any](ctx *fiber.Ctx) (T, error) {
+	var req T
+	err := ctx.BodyParser(&req)
 	if err != nil {
-		return data, err
+		return req, err
 	}
 
-	if err := validate.Struct(data); err != nil {
-		return data, err
+	if err := validate.Struct(req); err != nil {
+		return req, err
 	}
 
-	return data, nil
+	return req, nil
 }

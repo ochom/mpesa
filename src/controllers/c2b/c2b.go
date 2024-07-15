@@ -127,6 +127,14 @@ func ResultPayment(id string, req *domain.MpesaExpressCallback) {
 		return
 	}
 
+	account, err := sql.FindOne[models.Account](func(d *gorm.DB) *gorm.DB {
+		return d.Where("id = ?", cacheData.AccountId)
+	})
+	if err != nil {
+		logs.Error("failed to find account: %v", err)
+		return
+	}
+
 	meta := map[string]any{}
 	for _, item := range req.Body.StkCallback.CallbackMetadata.Item {
 		meta[item.Name] = item.Value
@@ -138,7 +146,7 @@ func ResultPayment(id string, req *domain.MpesaExpressCallback) {
 	billRefNumber := cacheData.PhoneNumber
 	invoiceNumber := cacheData.InvoiceNumber
 
-	customerPayment := models.NewCustomerPayment(txId, txTime, txAmount, billRefNumber, invoiceNumber, billRefNumber)
+	customerPayment := models.NewCustomerPayment(int(account.ID), txId, txTime, txAmount, billRefNumber, invoiceNumber, billRefNumber)
 	if err := sql.Create(customerPayment); err != nil {
 		logs.Error("could not create this payment: %v", err)
 		return
@@ -148,7 +156,7 @@ func ResultPayment(id string, req *domain.MpesaExpressCallback) {
 		"id":           customerPayment.ID,
 		"status":       req.Body.StkCallback.ResultCode,
 		"message":      req.Body.StkCallback.ResultDesc,
-		"amount":       customerPayment.TransactionAmount,
+		"amount":       customerPayment.Amount,
 		"phone_number": customerPayment.PhoneNumber,
 		"reference":    customerPayment.TransactionID,
 	}
@@ -191,7 +199,7 @@ func ConfirmPayment(req *domain.ValidationRequest) {
 		return
 	}
 
-	customerPayment := models.NewCustomerPayment(req.TransID, req.TransTime, req.TransAmount, req.BillRefNumber, req.InvoiceNumber, req.MSISDN)
+	customerPayment := models.NewCustomerPayment(int(account.ID), req.TransID, req.TransTime, req.TransAmount, req.BillRefNumber, req.InvoiceNumber, req.MSISDN)
 	if err := sql.Create(customerPayment); err != nil {
 		logs.Error("could not create this payment: %v", err)
 		return
@@ -201,7 +209,7 @@ func ConfirmPayment(req *domain.ValidationRequest) {
 		"id":           customerPayment.ID,
 		"status":       0,
 		"message":      "Payment confirmed",
-		"amount":       customerPayment.TransactionAmount,
+		"amount":       customerPayment.Amount,
 		"phone_number": customerPayment.PhoneNumber,
 		"reference":    customerPayment.TransactionID,
 	}

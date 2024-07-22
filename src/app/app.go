@@ -21,6 +21,7 @@ func New() *fiber.App {
 	sc.Get("/search", handlers.HandleSearchAccounts)
 	sc.Post("/", handlers.HandleCreateAccount)
 	sc.Put("/:id", handlers.HandleUpdateAccount)
+	sc.Delete("/:id", handlers.HandleDeleteAccount)
 	sc.Post("/register-urls", handlers.HandleC2BRegisterUrls)
 
 	// c2b ...

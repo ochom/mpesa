@@ -7,7 +7,7 @@ import (
 // BusinessPayment store data when a business makes payment to Customer
 type BusinessPayment struct {
 	Model
-	AccountID                uint     `json:"account_id"`
+	AccountID                int      `json:"account_id"`
 	Amount                   string   `json:"amount"`
 	PhoneNumber              string   `json:"phone_number"`
 	RequestId                string   `json:"request_id"`
@@ -23,7 +23,7 @@ type BusinessPayment struct {
 }
 
 // NewBusinessPayment create a new BusinessPayment
-func NewBusinessPayment(shortCodeID uint, requestId, phone, amount, cbUrl string) *BusinessPayment {
+func NewBusinessPayment(shortCodeID int, requestId, phone, amount, cbUrl string) *BusinessPayment {
 	return &BusinessPayment{
 		AccountID:   shortCodeID,
 		RequestId:   requestId,

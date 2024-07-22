@@ -1,9 +1,5 @@
 package models
 
-import (
-	"gorm.io/gorm"
-)
-
 type AccountType string
 
 const (
@@ -15,7 +11,7 @@ const (
 
 // Account ...
 type Account struct {
-	gorm.Model
+	Model
 	ShortCode         string      `json:"short_code" gorm:"index"`
 	Name              string      `json:"name"` // a name to easily identify the account
 	Type              AccountType `json:"type"`

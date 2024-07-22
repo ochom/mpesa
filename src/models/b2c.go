@@ -2,12 +2,11 @@ package models
 
 import (
 	"github.com/ochom/gutils/helpers"
-	"gorm.io/gorm"
 )
 
 // BusinessPayment store data when a business makes payment to Customer
 type BusinessPayment struct {
-	gorm.Model
+	Model
 	AccountID                uint     `json:"account_id"`
 	Amount                   string   `json:"amount"`
 	PhoneNumber              string   `json:"phone_number"`

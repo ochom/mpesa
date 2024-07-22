@@ -2,13 +2,11 @@ package models
 
 import (
 	"github.com/ochom/gutils/helpers"
-	"gorm.io/gorm"
 )
 
 // CustomerPayment store data when customer makes a payment to business
 type CustomerPayment struct {
-	gorm.Model
-	Uuid                    string `json:"uuid"`
+	Model
 	AccountID               int    `json:"account_id" gorm:"index"`
 	TransactionType         string `json:"transaction_type,omitempty"`
 	TransactionID           string `json:"transaction_id,omitempty" gorm:"unique"`

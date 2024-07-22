@@ -16,13 +16,11 @@ func HandleListAccounts(ctx *fiber.Ctx) error {
 	mapped := arrays.Map(accounts, func(account *models.Account) map[string]any {
 		return map[string]any{
 			"id":               account.ID,
-			"short_code":       account.ShortCode,
-			"name":             account.Name,
 			"type":             account.Type,
+			"name":             account.Name,
+			"short_code":       account.ShortCode,
 			"created_at":       account.CreatedAt,
 			"updated_at":       account.UpdatedAt,
-			"consumer_key":     account.ConsumerKey,
-			"pass_key":         account.PassKey,
 			"validation_url":   account.ValidationUrl,
 			"confirmation_url": account.ConfirmationUrl,
 		}

@@ -53,6 +53,8 @@ func HandleGetC2BPayments(ctx *fiber.Ctx) error {
 
 // HandleStkPush ...
 func HandleStkPush(ctx *fiber.Ctx) error {
+	logs.Info("c2b push => %s", string(ctx.Body()))
+
 	req, err := parseDataValidate[domain.MpesaExpressRequest](ctx)
 	if err != nil {
 		return err

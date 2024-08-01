@@ -2,6 +2,7 @@ package models
 
 import (
 	"github.com/ochom/gutils/helpers"
+	"github.com/ochom/gutils/uuid"
 )
 
 // CustomerPayment store data when customer makes a payment to business
@@ -20,6 +21,10 @@ type CustomerPayment struct {
 
 // NewCustomerPayment create a new CustomerPayment
 func NewCustomerPayment(accountId int, txId, txTime, txAmount, billRefNumber, invoiceNumber, msisdn string) *CustomerPayment {
+	if txId == "" {
+		txId = uuid.New()
+	}
+
 	return &CustomerPayment{
 		AccountID:       accountId,
 		TransactionType: "CustomerPayBillOnline",

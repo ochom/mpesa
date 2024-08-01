@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/ochom/gutils/arrays"
 	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/logs"
 	"github.com/ochom/gutils/sql"
@@ -12,17 +14,47 @@ import (
 	"github.com/ochom/mpesa/src/controllers/c2b"
 	"github.com/ochom/mpesa/src/domain"
 	"github.com/ochom/mpesa/src/models"
+	"gorm.io/gorm"
 )
 
 // HandleGetC2BPayments ...
 func HandleGetC2BPayments(ctx *fiber.Ctx) error {
 	page, limit := ctx.QueryInt("page", 1), ctx.QueryInt("limit", 10)
-	payments := sql.FindWithLimit[models.CustomerPayment](page, limit)
-	return ctx.JSON(payments)
+	query := map[string]string{}
+	if ctx.Query("account_id") != "" {
+		query["account_id"] = ctx.Query("account_id")
+	}
+
+	if ctx.Query("phone_number") != "" {
+		query["phone_number"] = helpers.ParseMobile(ctx.Query("phone_number"))
+	}
+
+	payments := sql.FindWithLimit[models.CustomerPayment](page, limit, func(d *gorm.DB) *gorm.DB {
+		return d.Where(query).Order("created_at desc")
+	})
+
+	data := arrays.Map(payments, func(p *models.CustomerPayment) map[string]any {
+		return map[string]any{
+			"id":               p.ID,
+			"created_at":       p.CreatedAt.Format(time.RFC3339),
+			"account_id":       1,
+			"transaction_type": p.TransactionType,
+			"transaction_id":   p.TransactionID,
+			"transaction_time": p.TransactionTime,
+			"phone_number":     p.PhoneNumber,
+			"amount":           p.Amount,
+			"bill_ref_number":  p.BillRefNumber,
+			"invoice_number":   p.InvoiceNumber,
+		}
+	})
+
+	return ctx.JSON(data)
 }
 
 // HandleStkPush ...
 func HandleStkPush(ctx *fiber.Ctx) error {
+	logs.Info("c2b push => %s", string(ctx.Body()))
+
 	req, err := parseDataValidate[domain.MpesaExpressRequest](ctx)
 	if err != nil {
 		return err

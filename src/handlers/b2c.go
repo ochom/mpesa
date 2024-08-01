@@ -7,12 +7,15 @@ import (
 	"github.com/ochom/mpesa/src/controllers/b2c"
 	"github.com/ochom/mpesa/src/domain"
 	"github.com/ochom/mpesa/src/models"
+	"gorm.io/gorm"
 )
 
 // HandleGetB2CPayments ...
 func HandleGetB2CPayments(ctx *fiber.Ctx) error {
 	page, limit := ctx.QueryInt("page", 1), ctx.QueryInt("limit", 10)
-	payments := sql.FindWithLimit[models.BusinessPayment](page, limit)
+	payments := sql.FindWithLimit[models.BusinessPayment](page, limit, func(d *gorm.DB) *gorm.DB {
+		return d.Order("created_at desc")
+	})
 	return ctx.JSON(payments)
 }
 

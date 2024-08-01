@@ -15,14 +15,14 @@ func HandleListAccounts(ctx *fiber.Ctx) error {
 	accounts := sql.FindAll[models.Account]()
 	mapped := arrays.Map(accounts, func(account *models.Account) map[string]any {
 		return map[string]any{
-			"id":           account.ID,
-			"short_code":   account.ShortCode,
-			"name":         account.Name,
-			"type":         account.Type,
-			"created_at":   account.CreatedAt,
-			"updated_at":   account.UpdatedAt,
-			"consumer_key": account.ConsumerKey,
-			"pass_key":     account.PassKey,
+			"id":               account.ID,
+			"type":             account.Type,
+			"name":             account.Name,
+			"short_code":       account.ShortCode,
+			"created_at":       account.CreatedAt,
+			"updated_at":       account.UpdatedAt,
+			"validation_url":   account.ValidationUrl,
+			"confirmation_url": account.ConfirmationUrl,
 		}
 	})
 

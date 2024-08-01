@@ -2,12 +2,11 @@ package models
 
 import (
 	"github.com/ochom/gutils/uuid"
-	"gorm.io/gorm"
 )
 
 // TaxPayment store data when business makes a tax payment
 type TaxPayment struct {
-	gorm.Model
+	Model
 	Uuid                     string   `json:"uuid"`
 	Amount                   string   `json:"amount"`
 	ShortCode                string   `json:"short_code"`

@@ -42,7 +42,7 @@ func HandleTaxResult(ctx *fiber.Ctx) error {
 
 	req, err := parseDataValidate[domain.TaxResult](ctx)
 	if err != nil {
-		logs.Error("tax result parse error: => %s", err)
+		logs.Error("tax result parse error: => %v", err)
 		return err
 	}
 

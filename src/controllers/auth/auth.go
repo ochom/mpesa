@@ -15,16 +15,20 @@ import (
 
 func Authenticate(account *models.Account) string {
 	tokenName := fmt.Sprintf("mpesa_%s_token_%d", account.Type, account.ID)
-	cached, err := cache.Get[map[string]string](tokenName)
+	logs.Info("getting token: %s", tokenName)
+
+	tokens, err := cache.Get[map[string]string](tokenName)
 	if err != nil {
+		logs.Error("failed to get token: %v", err)
 		return setToken(account, tokenName)
 	}
 
-	if cached["access_token"] == "" {
+	if tokens["access_token"] == "" {
+		logs.Warn("token is empty")
 		return setToken(account, tokenName)
 	}
 
-	return cached["access_token"]
+	return tokens["access_token"]
 }
 
 func setToken(account *models.Account, tokenName string) string {
@@ -46,8 +50,9 @@ func setToken(account *models.Account, tokenName string) string {
 		return ""
 	}
 
-	if err := cache.SetWithExpiry(tokenName, tokens, 50*time.Minute); err != nil {
+	if err := cache.SetWithExpiry(tokenName, tokens, config.MpesaTokenExpiry); err != nil {
 		logs.Error("failed to set token: %v", err)
+		return ""
 	}
 
 	return token

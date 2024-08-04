@@ -81,7 +81,7 @@ func HandleC2BResult(ctx *fiber.Ctx) error {
 
 	req, err := parseDataValidate[domain.MpesaExpressCallback](ctx)
 	if err != nil {
-		logs.Error("c2b result parse error: => %s", err)
+		logs.Error("c2b result parse error: => %v", err)
 		return err
 	}
 
@@ -95,7 +95,7 @@ func HandleRestValidation(ctx *fiber.Ctx) error {
 
 	req, err := parseDataValidate[domain.ValidationRequest](ctx)
 	if err != nil {
-		logs.Error("c2b rest validation parse error: => %s", err)
+		logs.Error("c2b rest validation parse error: => %v", err)
 		return err
 	}
 
@@ -116,7 +116,7 @@ func HandleRestConfirmation(ctx *fiber.Ctx) error {
 
 	req, err := parseDataValidate[domain.ValidationRequest](ctx)
 	if err != nil {
-		logs.Error("c2b rest confirmation parse error: => %s", err)
+		logs.Error("rest confirmation parse error: => %v", err)
 		return err
 	}
 
@@ -145,7 +145,7 @@ func HandleSoapConfirmation(ctx *fiber.Ctx) error {
 
 	var req domain.SoapPaymentConfirmationRequest
 	if err := ctx.BodyParser(&req); err != nil {
-		logs.Error("c2b soap confirmation parse error: => %s", err)
+		logs.Error("c2b soap confirmation parse error: => %v", err)
 		return err
 	}
 

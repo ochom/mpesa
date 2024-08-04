@@ -2,7 +2,9 @@ package models
 
 import (
 	"github.com/ochom/gutils/helpers"
+	"github.com/ochom/gutils/sql"
 	"github.com/ochom/gutils/uuid"
+	"gorm.io/gorm"
 )
 
 // CustomerPayment store data when customer makes a payment to business
@@ -17,6 +19,19 @@ type CustomerPayment struct {
 	BillRefNumber           string `json:"bill_ref_number,omitempty"`
 	InvoiceNumber           string `json:"invoice_number,omitempty"`
 	ThirdPartyTransactionID string `json:"third_party_transaction_id,omitempty"`
+}
+
+// Save save the payment
+func (p *CustomerPayment) Save() error {
+	count := sql.Count[CustomerPayment](func(d *gorm.DB) *gorm.DB {
+		return d.Where("transaction_id = ?", p.TransactionID)
+	})
+
+	if count > 0 {
+		return nil
+	}
+
+	return sql.Create(p)
 }
 
 // NewCustomerPayment create a new CustomerPayment

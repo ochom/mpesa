@@ -19,12 +19,12 @@ func Authenticate(account *models.Account) string {
 
 	tokens, err := cache.Get[map[string]string](tokenName)
 	if err != nil {
-		logs.Error("failed to get token: %v", err)
+		logs.Warn("token not found, generating a new token")
 		return setToken(account, tokenName)
 	}
 
 	if tokens["access_token"] == "" {
-		logs.Warn("token is empty")
+		logs.Warn("empty token, generating a new token")
 		return setToken(account, tokenName)
 	}
 

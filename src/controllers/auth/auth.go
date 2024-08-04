@@ -48,7 +48,7 @@ func setToken(account *models.Account, tokenName string) string {
 		return ""
 	}
 
-	if err := cache.SetWithExpiry(tokenName, tokens, 50*time.Minute); err != nil {
+	if err := cache.SetWithExpiry(tokenName, tokens, 5*time.Minute); err != nil {
 		logs.Error("failed to set token: %v", err)
 		return ""
 	}

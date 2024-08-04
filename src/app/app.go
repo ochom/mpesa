@@ -39,7 +39,7 @@ func New() *fiber.App {
 	b2c.Get("/payments", handlers.HandleGetB2CPayments)
 	b2c.Post("/initiate", b2cOrigins(), handlers.HandleInitiatePayment)
 	b2c.Post("/result", safOrigins(), handlers.HandleB2CResult)
-	b2c.Post("/timeout", safOrigins(), handlers.HandleB2cTimeout)
+	b2c.Post("/timeout", safOrigins(), handlers.HandleB2CTimeout)
 
 	// tax ...
 	tax := v1.Group("/tax")

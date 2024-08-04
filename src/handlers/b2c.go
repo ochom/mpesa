@@ -42,7 +42,7 @@ func HandleB2CResult(ctx *fiber.Ctx) error {
 
 	req, err := parseDataValidate[domain.B2cResult](ctx)
 	if err != nil {
-		logs.Error("b2c result parse error: => %s", err)
+		logs.Error("b2c result parse error: => %v", err)
 		return err
 	}
 
@@ -51,7 +51,7 @@ func HandleB2CResult(ctx *fiber.Ctx) error {
 }
 
 // HandleB2cTimeout ...
-func HandleB2cTimeout(ctx *fiber.Ctx) error {
+func HandleB2CTimeout(ctx *fiber.Ctx) error {
 	logs.Info("b2c timeout => %s", string(ctx.Body()))
 
 	id := ctx.Params("id")

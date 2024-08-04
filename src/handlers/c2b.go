@@ -112,8 +112,6 @@ func HandleRestValidation(ctx *fiber.Ctx) error {
 
 // HandleRestConfirmation ...
 func HandleRestConfirmation(ctx *fiber.Ctx) error {
-	logs.Info("c2b rest confirmation => %s", string(ctx.Body()))
-
 	req, err := parseDataValidate[domain.ValidationRequest](ctx)
 	if err != nil {
 		logs.Error("rest confirmation parse error: => %v", err)

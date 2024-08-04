@@ -153,7 +153,7 @@ func ResultPayment(id string, req *domain.MpesaExpressCallback) {
 	invoiceNumber := cacheData.InvoiceNumber
 
 	customerPayment := models.NewCustomerPayment(account.ID, txId, txTime, txAmount, billRefNumber, invoiceNumber, billRefNumber)
-	if err := sql.Create(customerPayment); err != nil {
+	if err := customerPayment.Save(); err != nil {
 		logs.Error("could not create this payment: %v", err)
 		return
 	}
@@ -206,7 +206,7 @@ func ConfirmPayment(req *domain.ValidationRequest) {
 	}
 
 	customerPayment := models.NewCustomerPayment(account.ID, req.TransID, req.TransTime, req.TransAmount, req.BillRefNumber, req.InvoiceNumber, req.MSISDN)
-	if err := sql.Create(customerPayment); err != nil {
+	if err := customerPayment.Save(); err != nil {
 		logs.Error("could not create this payment: %v", err)
 		return
 	}

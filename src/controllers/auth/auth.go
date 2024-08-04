@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/ochom/gutils/cache"
-	"github.com/ochom/gutils/env"
 	"github.com/ochom/gutils/gttp"
 	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/logs"
@@ -49,8 +48,7 @@ func setToken(account *models.Account, tokenName string) string {
 		return ""
 	}
 
-	tokenExpiry := time.Duration(env.Int("MPESA_TOKEN_EXPIRY_MINUTES", 5)) * time.Minute
-	if err := cache.SetWithExpiry(tokenName, tokens, tokenExpiry); err != nil {
+	if err := cache.SetWithExpiry(tokenName, tokens, config.MpesaTokenExpiry); err != nil {
 		logs.Error("failed to set token: %v", err)
 		return ""
 	}

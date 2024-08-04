@@ -90,8 +90,14 @@ func InitiatePayment(req *domain.MpesaExpressRequest) {
 		"TransactionDesc":   "Pay bill",
 	}
 
+	token := auth.Authenticate(account)
+	if token == "" {
+		logs.Error("failed to authenticate")
+		return
+	}
+
 	headers := map[string]string{
-		"Authorization": "Bearer " + auth.Authenticate(account),
+		"Authorization": "Bearer " + token,
 		"Content-Type":  "application/json",
 	}
 

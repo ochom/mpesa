@@ -71,11 +71,9 @@ func HandleStkPush(ctx *fiber.Ctx) error {
 
 // HandleResult ...
 func HandleC2BResult(ctx *fiber.Ctx) error {
-	logs.Info("c2b result => %s", string(ctx.Body()))
-
 	id := ctx.Query("refId")
 	if id == "" {
-		logs.Error("c2b result => refId is required")
+		logs.Error("invalid c2b result => refId is required")
 		return ctx.JSON(fiber.Map{"message": "failed, refId is required"})
 	}
 

@@ -7,7 +7,7 @@ replace github.com/mattn/go-sqlite3 => github.com/leso-kn/go-sqlite3 v0.0.0-2023
 require (
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/gofiber/fiber/v2 v2.52.5
-	github.com/ochom/gutils v1.2.6
+	github.com/ochom/gutils v1.2.7
 	gorm.io/gorm v1.25.10
 )
 

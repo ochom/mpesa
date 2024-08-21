@@ -18,12 +18,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// hash hashes the short_code, passkey and timestamp
-func hash(shortCode, passKey, timeStamp string) string {
-	join := shortCode + passKey + timeStamp
-	return utils.Encode([]byte(join))
-}
-
 // RegisterUrls registers c2b url
 func RegisterUrls(req map[string]string) {
 	account, err := sql.FindOneById[models.Account](req["account_id"])
@@ -76,9 +70,15 @@ func InitiatePayment(req *domain.MpesaExpressRequest) error {
 	timestamp := time.Now().Format("20060102150405")
 	callbackUrl := fmt.Sprintf("%s/v1/c2b/result?refId=%s", config.BaseUrl, refId)
 
+	url := fmt.Sprintf("%s/mpesa/stkpush/v1/processrequest", config.MpesaApiUrl)
+	headers := map[string]string{
+		"Authorization": fmt.Sprintf("Bearer %s", auth.Authenticate(account)),
+		"Content-Type":  "application/json",
+	}
+
 	payload := map[string]string{
 		"BusinessShortCode": account.ShortCode,
-		"Password":          hash(account.ShortCode, account.PassKey, timestamp),
+		"Password":          utils.Encode([]byte(account.ShortCode + account.PassKey + timestamp)),
 		"Timestamp":         timestamp,
 		"TransactionType":   "CustomerPayBillOnline",
 		"Amount":            req.Amount,
@@ -90,18 +90,10 @@ func InitiatePayment(req *domain.MpesaExpressRequest) error {
 		"TransactionDesc":   "Pay bill",
 	}
 
-	token := auth.Authenticate(account)
-	if token == "" {
-		logs.Error("failed to authenticate")
-		return fmt.Errorf("failed to authenticate")
-	}
+	logs.Debug("url: %s", url)
+	logs.Debug("headers: %v", headers)
+	logs.Debug("payload: %v", payload)
 
-	headers := map[string]string{
-		"Authorization": "Bearer " + token,
-		"Content-Type":  "application/json",
-	}
-
-	url := fmt.Sprintf("%s/mpesa/stkpush/v1/processrequest", config.MpesaApiUrl)
 	res, err := gttp.Post(url, headers, payload)
 	if err != nil {
 		logs.Error("failed to make request: %v", err)

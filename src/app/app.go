@@ -28,7 +28,7 @@ func New() *fiber.App {
 	c2b := v1.Group("/c2b")
 	c2b.Get("/payments", handlers.HandleGetC2BPayments)
 	c2b.Post("/initiate", handlers.HandleStkPush)
-	c2b.Post("/result", safOrigins(), handlers.HandleC2BResult)
+	c2b.Post("/result", safOrigins(), handlers.HandleC2BCallback)
 	c2b.Post("/validate", safOrigins(), handlers.HandleRestValidation)
 	c2b.Post("/confirm", safOrigins(), handlers.HandleRestConfirmation)
 	c2b.Post("/soap/validate", handlers.HandleSoapValidation)

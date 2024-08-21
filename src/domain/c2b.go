@@ -1,6 +1,12 @@
 package domain
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+	"fmt"
+	"strconv"
+
+	"github.com/ochom/gutils/helpers"
+)
 
 // MpesaExpressRequest the payload required to initiate an mpesa stk push
 type MpesaExpressRequest struct {
@@ -9,6 +15,20 @@ type MpesaExpressRequest struct {
 	PhoneNumber   string `json:"phone_number" validate:"required"`
 	InvoiceNumber string `json:"invoice_number"`
 	CallbackUrl   string `json:"callback_url" validate:"required"`
+}
+
+// Validate validates the payload
+func (req *MpesaExpressRequest) Validate() error {
+	req.PhoneNumber = helpers.ParseMobile(req.PhoneNumber)
+	if req.PhoneNumber == "" {
+		return fmt.Errorf("invalid phone number")
+	}
+
+	_, err := strconv.Atoi(req.Amount)
+	if err != nil {
+		return fmt.Errorf("invalid amount")
+	}
+	return nil
 }
 
 // MpesaExpressCallback the response from an mpesa stk push

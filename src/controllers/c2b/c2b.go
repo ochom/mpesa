@@ -90,10 +90,6 @@ func InitiatePayment(req *domain.MpesaExpressRequest) error {
 		"TransactionDesc":   "Pay bill",
 	}
 
-	logs.Debug("url: %s", url)
-	logs.Debug("headers: %v", headers)
-	logs.Debug("payload: %v", payload)
-
 	res, err := gttp.Post(url, headers, payload)
 	if err != nil {
 		logs.Error("failed to make request: %v", err)

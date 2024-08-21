@@ -60,22 +60,22 @@ func HandleStkPush(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	req.PhoneNumber = helpers.ParseMobile(req.PhoneNumber)
-	if req.InvoiceNumber == "" {
-		req.InvoiceNumber = req.PhoneNumber
+	if err := req.Validate(); err != nil {
+		return ctx.Status(400).JSON(fiber.Map{"message": err.Error()})
 	}
 
-	go c2b.InitiatePayment(&req)
+	if err := c2b.InitiatePayment(&req); err != nil {
+		return ctx.Status(500).JSON(fiber.Map{"message": err.Error()})
+	}
+
 	return ctx.JSON(fiber.Map{"message": "success"})
 }
 
-// HandleResult ...
-func HandleC2BResult(ctx *fiber.Ctx) error {
-	logs.Info("c2b result => %s", string(ctx.Body()))
-
+// HandleC2BCallback ...
+func HandleC2BCallback(ctx *fiber.Ctx) error {
 	id := ctx.Query("refId")
 	if id == "" {
-		logs.Error("c2b result => refId is required")
+		logs.Error("invalid c2b result => refId is required")
 		return ctx.JSON(fiber.Map{"message": "failed, refId is required"})
 	}
 
@@ -85,7 +85,13 @@ func HandleC2BResult(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	go c2b.ResultPayment(id, &req)
+	message := map[string]any{
+		"message_type": "callback",
+		"id":           id,
+		"message":      req,
+	}
+
+	go c2b.AddMessage(message)
 	return ctx.JSON(fiber.Map{"message": "success"})
 }
 
@@ -118,7 +124,12 @@ func HandleRestConfirmation(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	go c2b.ConfirmPayment(&req)
+	message := map[string]any{
+		"message_type": "confirmation",
+		"message":      req,
+	}
+
+	go c2b.AddMessage(message)
 	return ctx.JSON(fiber.Map{
 		"ResultCode": "0",
 		"ResultDesc": "Success",
@@ -158,7 +169,13 @@ func HandleSoapConfirmation(ctx *fiber.Ctx) error {
 		MSISDN:            req.Body.C2BPaymentConfirmationRequest.MSISDN,
 	}
 
-	go c2b.ConfirmPayment(&validationRequest)
+	message := map[string]any{
+		"message_type": "confirmation",
+		"message":      validationRequest,
+	}
+
+	go c2b.AddMessage(message)
+
 	template := strings.Replace(config.SoapConfirmationTemplate, "{TRANSACTION_ID}", validationRequest.TransID, 1)
 	return ctx.SendString(template)
 }

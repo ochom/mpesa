@@ -60,17 +60,17 @@ func RegisterUrls(req map[string]string) {
 }
 
 // InitiatePayment initiates an mpesa c2b stk push
-func InitiatePayment(req *domain.MpesaExpressRequest) {
+func InitiatePayment(req *domain.MpesaExpressRequest) error {
 	account, err := sql.FindOneById[models.Account](req.AccountId)
 	if err != nil {
 		logs.Error("failed to find account: %v", err)
-		return
+		return fmt.Errorf("c2b account not found")
 	}
 
 	refId := uuid.New()
 	if err := cache.SetWithExpiry(fmt.Sprintf("stk-%s", refId), req, 5*time.Minute); err != nil {
 		logs.Error("failed to set cache: %v", err)
-		return
+		return fmt.Errorf("failed to set cache")
 	}
 
 	timestamp := time.Now().Format("20060102150405")
@@ -93,7 +93,7 @@ func InitiatePayment(req *domain.MpesaExpressRequest) {
 	token := auth.Authenticate(account)
 	if token == "" {
 		logs.Error("failed to authenticate")
-		return
+		return fmt.Errorf("failed to authenticate")
 	}
 
 	headers := map[string]string{
@@ -105,71 +105,21 @@ func InitiatePayment(req *domain.MpesaExpressRequest) {
 	res, err := gttp.Post(url, headers, payload)
 	if err != nil {
 		logs.Error("failed to make request: %v", err)
-		return
+		return fmt.Errorf("failed to make request")
 	}
 
 	if res.Status > 204 {
 		logs.Error("request failed status: %d body: %v", res.Status, string(res.Body))
-		return
+		return fmt.Errorf("request failed")
 	}
 
 	data := helpers.FromBytes[map[string]string](res.Body)
 	if data["ResponseCode"] != "0" {
 		logs.Error("initiate stk failed: ResponseDescription=>%s", data["ResponseDescription"])
-		return
-	}
-}
-
-// ResultPayment processes the payment result for stk push
-func ResultPayment(id string, req *domain.MpesaExpressCallback) {
-	cacheData, err := cache.Get[domain.MpesaExpressRequest](fmt.Sprintf("stk-%s", id))
-	if err != nil {
-		logs.Error("failed to get stk payment cache: %v", err)
-		return
+		return fmt.Errorf("initiate stk failed")
 	}
 
-	if req.Body.StkCallback.ResultCode != 0 {
-		logs.Error("failed to process payment: %v", req.Body.StkCallback.ResultDesc)
-		return
-	}
-
-	account, err := sql.FindOne[models.Account](func(d *gorm.DB) *gorm.DB {
-		return d.Where("id = ?", cacheData.AccountId)
-	})
-	if err != nil {
-		logs.Error("failed to find account: %v", err)
-		return
-	}
-
-	meta := map[string]any{}
-	for _, item := range req.Body.StkCallback.CallbackMetadata.Item {
-		meta[item.Name] = item.Value
-	}
-
-	txId := meta["MpesaReceiptNumber"].(string)
-	txTime := time.Now().Format("20060102150405")
-	txAmount := cacheData.Amount
-	billRefNumber := cacheData.PhoneNumber
-	invoiceNumber := cacheData.InvoiceNumber
-
-	customerPayment := models.NewCustomerPayment(account.ID, txId, txTime, txAmount, billRefNumber, invoiceNumber, billRefNumber)
-	if err := customerPayment.Save(); err != nil {
-		logs.Error("could not create this payment: %v", err)
-		return
-	}
-
-	payload := map[string]any{
-		"id":           customerPayment.ID,
-		"status":       req.Body.StkCallback.ResultCode,
-		"message":      req.Body.StkCallback.ResultDesc,
-		"amount":       customerPayment.Amount,
-		"phone_number": customerPayment.PhoneNumber,
-		"reference":    customerPayment.TransactionID,
-	}
-
-	if err := utils.NotifyClient(cacheData.CallbackUrl, payload); err != nil {
-		logs.Error("failed to notify client: %v", err)
-	}
+	return nil
 }
 
 // ValidatePayment  validates payments received through REST API
@@ -193,34 +143,4 @@ func ValidatePayment(req *domain.ValidationRequest) bool {
 	}
 
 	return true
-}
-
-// ConfirmPayment confirms payments received through REST API
-func ConfirmPayment(req *domain.ValidationRequest) {
-	account, err := sql.FindOne[models.Account](func(d *gorm.DB) *gorm.DB {
-		return d.Where("short_code = ?", req.BusinessShortCode)
-	})
-	if err != nil {
-		logs.Error("failed to find account: %v", err)
-		return
-	}
-
-	customerPayment := models.NewCustomerPayment(account.ID, req.TransID, req.TransTime, req.TransAmount, req.BillRefNumber, req.InvoiceNumber, req.MSISDN)
-	if err := customerPayment.Save(); err != nil {
-		logs.Error("could not create this payment: %v", err)
-		return
-	}
-
-	payload := map[string]any{
-		"id":           customerPayment.ID,
-		"status":       0,
-		"message":      "Payment confirmed",
-		"amount":       customerPayment.Amount,
-		"phone_number": customerPayment.PhoneNumber,
-		"reference":    customerPayment.TransactionID,
-	}
-
-	if err := utils.NotifyClient(account.ConfirmationUrl, payload); err != nil {
-		logs.Error("failed to notify client: %v", err)
-	}
 }

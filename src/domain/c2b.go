@@ -13,7 +13,7 @@ type MpesaExpressRequest struct {
 	AccountId     string `json:"account_id" validate:"required"`
 	Amount        string `json:"amount" validate:"required"`
 	PhoneNumber   string `json:"phone_number" validate:"required"`
-	InvoiceNumber string `json:"invoice_number"`
+	InvoiceNumber string `json:"invoice_number" validate:"required"`
 	CallbackUrl   string `json:"callback_url" validate:"required"`
 }
 

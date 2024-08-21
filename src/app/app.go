@@ -15,37 +15,41 @@ func New() *fiber.App {
 
 	// register routes
 	v1 := app.Group("/v1")
-	sc := v1.Group("/accounts")
-	sc.Use(basicAuth())
-	sc.Get("/", handlers.HandleListAccounts)
-	sc.Get("/search", handlers.HandleSearchAccounts)
-	sc.Post("/", handlers.HandleCreateAccount)
-	sc.Put("/:id", handlers.HandleUpdateAccount)
-	sc.Delete("/:id", handlers.HandleDeleteAccount)
-	sc.Post("/register-urls", handlers.HandleC2BRegisterUrls)
+	v1.Route("/accounts", func(r fiber.Router) {
+		r.Use(basicAuth())
+		r.Get("/", handlers.HandleListAccounts)
+		r.Get("/search", handlers.HandleSearchAccounts)
+		r.Post("/", handlers.HandleCreateAccount)
+		r.Put("/:id", handlers.HandleUpdateAccount)
+		r.Delete("/:id", handlers.HandleDeleteAccount)
+		r.Post("/register-urls", handlers.HandleC2BRegisterUrls)
+	})
 
 	// c2b ...
-	c2b := v1.Group("/c2b")
-	c2b.Get("/payments", handlers.HandleGetC2BPayments)
-	c2b.Post("/initiate", handlers.HandleStkPush)
-	c2b.Post("/result", safOrigins(), handlers.HandleC2BCallback)
-	c2b.Post("/validate", safOrigins(), handlers.HandleRestValidation)
-	c2b.Post("/confirm", safOrigins(), handlers.HandleRestConfirmation)
-	c2b.Post("/soap/validate", handlers.HandleSoapValidation)
-	c2b.Post("/soap/confirm", handlers.HandleSoapConfirmation)
+	v1.Route("/c2b", func(r fiber.Router) {
+		r.Get("/payments", handlers.HandleGetC2BPayments)
+		r.Post("/initiate", handlers.HandleStkPush)
+		r.Post("/result", safOrigins(), handlers.HandleC2BCallback)
+		r.Post("/validate", safOrigins(), handlers.HandleRestValidation)
+		r.Post("/confirm", safOrigins(), handlers.HandleRestConfirmation)
+		r.Post("/soap/validate", handlers.HandleSoapValidation)
+		r.Post("/soap/confirm", handlers.HandleSoapConfirmation)
+	})
 
 	// b2c ...
-	b2c := v1.Group("b2c")
-	b2c.Get("/payments", handlers.HandleGetB2CPayments)
-	b2c.Post("/initiate", b2cOrigins(), handlers.HandleInitiatePayment)
-	b2c.Post("/result", safOrigins(), handlers.HandleB2CResult)
-	b2c.Post("/timeout", safOrigins(), handlers.HandleB2CTimeout)
+	v1.Route("/b2c", func(r fiber.Router) {
+		r.Get("/payments", handlers.HandleGetB2CPayments)
+		r.Post("/initiate", b2cOrigins(), handlers.HandleInitiatePayment)
+		r.Post("/result", safOrigins(), handlers.HandleB2CResult)
+		r.Post("/timeout", safOrigins(), handlers.HandleB2CTimeout)
+	})
 
 	// tax ...
-	tax := v1.Group("/tax")
-	tax.Post("/initiate", taxOrigins(), handlers.HandleTaxRemittance)
-	tax.Post("/result", safOrigins(), handlers.HandleTaxResult)
-	tax.Post("/timeout", safOrigins(), handlers.HandleTaxTimeout)
+	v1.Route("/tax", func(r fiber.Router) {
+		r.Post("/initiate", taxOrigins(), handlers.HandleTaxRemittance)
+		r.Post("/result", safOrigins(), handlers.HandleTaxResult)
+		r.Post("/timeout", safOrigins(), handlers.HandleTaxTimeout)
+	})
 
 	return app
 }

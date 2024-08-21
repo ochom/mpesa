@@ -1,6 +1,8 @@
 package models
 
 import (
+	"fmt"
+
 	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/sql"
 	"github.com/ochom/gutils/uuid"
@@ -28,7 +30,7 @@ func (p *CustomerPayment) Save() error {
 	})
 
 	if count > 0 {
-		return nil
+		return fmt.Errorf("payment already exists")
 	}
 
 	return sql.Create(p)

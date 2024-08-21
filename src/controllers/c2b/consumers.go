@@ -76,19 +76,19 @@ func resultPayment(id string, req *domain.MpesaExpressCallback) {
 	billRefNumber := cacheData.PhoneNumber
 	invoiceNumber := cacheData.InvoiceNumber
 
-	customerPayment := models.NewCustomerPayment(account.ID, txId, txTime, txAmount, billRefNumber, invoiceNumber, billRefNumber)
-	if err := customerPayment.Save(); err != nil {
+	cp := models.NewCustomerPayment(account.ID, txId, txTime, txAmount, billRefNumber, invoiceNumber, billRefNumber)
+	if err := cp.Save(); err != nil {
 		logs.Error("could not create this payment: %v", err)
 		return
 	}
 
 	payload := map[string]any{
-		"id":           customerPayment.ID,
+		"id":           cp.ID,
 		"status":       req.Body.StkCallback.ResultCode,
 		"message":      req.Body.StkCallback.ResultDesc,
-		"amount":       customerPayment.Amount,
-		"phone_number": customerPayment.PhoneNumber,
-		"reference":    customerPayment.TransactionID,
+		"amount":       cp.Amount,
+		"phone_number": cp.PhoneNumber,
+		"reference":    cp.TransactionID,
 	}
 
 	if err := utils.NotifyClient(cacheData.CallbackUrl, payload); err != nil {
@@ -106,19 +106,19 @@ func confirmPayment(req *domain.ValidationRequest) {
 		return
 	}
 
-	customerPayment := models.NewCustomerPayment(account.ID, req.TransID, req.TransTime, req.TransAmount, req.BillRefNumber, req.InvoiceNumber, req.MSISDN)
-	if err := customerPayment.Save(); err != nil {
+	cp := models.NewCustomerPayment(account.ID, req.TransID, req.TransTime, req.TransAmount, req.BillRefNumber, req.InvoiceNumber, req.MSISDN)
+	if err := cp.Save(); err != nil {
 		logs.Error("could not create this payment: %v", err)
 		return
 	}
 
 	payload := map[string]any{
-		"id":           customerPayment.ID,
+		"id":           cp.ID,
 		"status":       0,
 		"message":      "Payment confirmed",
-		"amount":       customerPayment.Amount,
-		"phone_number": customerPayment.PhoneNumber,
-		"reference":    customerPayment.TransactionID,
+		"amount":       cp.Amount,
+		"phone_number": cp.PhoneNumber,
+		"reference":    cp.TransactionID,
 	}
 
 	if err := utils.NotifyClient(account.ConfirmationUrl, payload); err != nil {

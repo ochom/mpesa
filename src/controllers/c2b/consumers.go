@@ -1,7 +1,6 @@
 package c2b
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/ochom/gutils/cache"
@@ -24,10 +23,10 @@ func init() {
 		for msg := range messages {
 			switch msg["message_type"] {
 			case "callback":
-				paymentID := msg["id"].(string)
 				reqJson := helpers.ToBytes(msg["message"])
 				req := helpers.FromBytes[domain.MpesaExpressCallback](reqJson)
-				resultPayment(paymentID, &req)
+				refId := msg["refId"].(string)
+				resultPayment(refId, &req)
 			case "confirmation":
 				reqJson := helpers.ToBytes(msg["message"])
 				req := helpers.FromBytes[domain.ValidationRequest](reqJson)
@@ -45,12 +44,14 @@ func AddMessage(msg map[string]any) {
 }
 
 // resultPayment processes the payment result for stk push
-func resultPayment(id string, req *domain.MpesaExpressCallback) {
-	cacheData, err := cache.Get[domain.MpesaExpressRequest](fmt.Sprintf("stk-%s", id))
+func resultPayment(refId string, req *domain.MpesaExpressCallback) {
+	cacheData, err := cache.Get[domain.MpesaExpressRequest](refId)
 	if err != nil {
 		logs.Error("failed to get stk payment cache: %v", err)
 		return
 	}
+
+	logs.Info("cached stk data: %v", cacheData)
 
 	if req.Body.StkCallback.ResultCode != 0 {
 		logs.Error("failed to process payment: %v", req.Body.StkCallback.ResultDesc)
@@ -58,7 +59,7 @@ func resultPayment(id string, req *domain.MpesaExpressCallback) {
 	}
 
 	account, err := sql.FindOne[models.Account](func(d *gorm.DB) *gorm.DB {
-		return d.Where("id = ?", cacheData.AccountId)
+		return d.Where("short_code = ?", cacheData.ShortCode)
 	})
 	if err != nil {
 		logs.Error("failed to find account: %v", err)

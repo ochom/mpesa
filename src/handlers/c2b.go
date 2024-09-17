@@ -73,8 +73,8 @@ func HandleStkPush(ctx *fiber.Ctx) error {
 
 // HandleC2BCallback ...
 func HandleC2BCallback(ctx *fiber.Ctx) error {
-	id := ctx.Query("refId")
-	if id == "" {
+	refId := ctx.Query("refId")
+	if refId == "" {
 		logs.Error("invalid c2b result => refId is required")
 		return ctx.JSON(fiber.Map{"message": "failed, refId is required"})
 	}
@@ -87,7 +87,7 @@ func HandleC2BCallback(ctx *fiber.Ctx) error {
 
 	message := map[string]any{
 		"message_type": "callback",
-		"id":           id,
+		"refId":        refId,
 		"message":      req,
 	}
 

@@ -55,20 +55,19 @@ func RegisterUrls(req map[string]string) {
 
 // InitiatePayment initiates an mpesa c2b stk push
 func InitiatePayment(req *domain.MpesaExpressRequest) error {
-	account, err := sql.FindOneById[models.Account](req.AccountId)
+	account, err := sql.FindOne[models.Account](func(d *gorm.DB) *gorm.DB {
+		return d.Where("short_code = ?", req.ShortCode)
+	})
 	if err != nil {
 		logs.Error("failed to find account: %v", err)
 		return fmt.Errorf("c2b account not found")
 	}
 
-	refId := uuid.New()
-	if err := cache.SetWithExpiry(fmt.Sprintf("stk-%s", refId), req, 5*time.Minute); err != nil {
+	cacheKey := fmt.Sprintf("stk-%s", uuid.New())
+	if err := cache.SetWithExpiry(cacheKey, req, 5*time.Minute); err != nil {
 		logs.Error("failed to set cache: %v", err)
 		return fmt.Errorf("failed to set cache")
 	}
-
-	timestamp := time.Now().Format("20060102150405")
-	callbackUrl := fmt.Sprintf("%s/v1/c2b/result?refId=%s", config.BaseUrl, refId)
 
 	url := fmt.Sprintf("%s/mpesa/stkpush/v1/processrequest", config.MpesaApiUrl)
 	headers := map[string]string{
@@ -76,6 +75,7 @@ func InitiatePayment(req *domain.MpesaExpressRequest) error {
 		"Content-Type":  "application/json",
 	}
 
+	timestamp := time.Now().Format("20060102150405")
 	payload := map[string]string{
 		"BusinessShortCode": account.ShortCode,
 		"Password":          utils.Encode([]byte(account.ShortCode + account.PassKey + timestamp)),
@@ -85,9 +85,9 @@ func InitiatePayment(req *domain.MpesaExpressRequest) error {
 		"PartyA":            req.PhoneNumber,
 		"PartyB":            account.ShortCode,
 		"PhoneNumber":       req.PhoneNumber,
-		"CallBackURL":       callbackUrl,
 		"AccountReference":  req.InvoiceNumber,
 		"TransactionDesc":   "Pay bill",
+		"CallBackURL":       fmt.Sprintf("%s/v1/c2b/result?refId=%s", config.BaseUrl, cacheKey),
 	}
 
 	res, err := gttp.Post(url, headers, payload)

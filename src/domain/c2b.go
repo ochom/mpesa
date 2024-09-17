@@ -10,7 +10,7 @@ import (
 
 // MpesaExpressRequest the payload required to initiate an mpesa stk push
 type MpesaExpressRequest struct {
-	AccountId     string `json:"account_id" validate:"required"`
+	ShortCode     string `json:"short_code" validate:"required"`
 	Amount        string `json:"amount" validate:"required"`
 	PhoneNumber   string `json:"phone_number" validate:"required"`
 	InvoiceNumber string `json:"invoice_number" validate:"required"`
